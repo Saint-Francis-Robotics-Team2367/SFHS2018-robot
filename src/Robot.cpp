@@ -15,6 +15,7 @@
 #include <SmartDashboard/SmartDashboard.h>
 #include <ctre/Phoenix.h>
 #include "AHRS.h"
+#include "SFDrive.h"
 
 class Robot : public frc::IterativeRobot
 {
@@ -27,7 +28,6 @@ class Robot : public frc::IterativeRobot
         double pConstant = .1;
         double iConstant = 0.001;
         double dConstant = 0;
-        int setPoint = 0;
         int checkTimeout = 0;
         int timeOut = 100;
         int packetsReceived = 0;
@@ -37,7 +37,7 @@ class Robot : public frc::IterativeRobot
         WPI_TalonSRX * _rMotor = new WPI_TalonSRX (rMotorNum);
         WPI_TalonSRX * _lMotor = new WPI_TalonSRX (lMotorNum);
 
-        DifferentialDrive *myRobot = new DifferentialDrive (*_lMotor, *_rMotor);
+        SFDrive *myRobot = new SFDrive (_lMotor, _rMotor);
         Joystick *stick = new Joystick (joystickNum);
 
         void RobotInit ()
@@ -51,14 +51,14 @@ class Robot : public frc::IterativeRobot
             _rMotor->SetSensorPhase (true);
             _lMotor->SetSensorPhase (true);
 
-            _rMotor->SelectProfileSlot(0,0);
-            _lMotor->SelectProfileSlot(0,0);
+            _rMotor->SelectProfileSlot (0, 0);
+            _lMotor->SelectProfileSlot (0, 0);
         }
 
         void TeleopInit ()
         {
-            _rMotor->GetSensorCollection().SetQuadraturePosition(0, checkTimeout);
-            _lMotor->GetSensorCollection().SetQuadraturePosition(0, checkTimeout);
+            _rMotor->GetSensorCollection ().SetQuadraturePosition (0, checkTimeout);
+            _lMotor->GetSensorCollection ().SetQuadraturePosition (0, checkTimeout);
             myRobot->ArcadeDrive (0.0, 0.0);
         }
 
@@ -69,8 +69,8 @@ class Robot : public frc::IterativeRobot
 
         void AutonomousInit ()
         {
-            _rMotor->GetSensorCollection().SetQuadraturePosition(0, checkTimeout);
-            _lMotor->GetSensorCollection().SetQuadraturePosition(0, checkTimeout);
+            _rMotor->GetSensorCollection ().SetQuadraturePosition (0, checkTimeout);
+            _lMotor->GetSensorCollection ().SetQuadraturePosition (0, checkTimeout);
         }
 
         void AutonomousPeriodic ()
@@ -83,12 +83,13 @@ class Robot : public frc::IterativeRobot
             SmartDashboard::PutNumber ("P", pConstant);
             SmartDashboard::PutNumber ("I", iConstant);
             SmartDashboard::PutNumber ("D", dConstant);
-            SmartDashboard::PutNumber ("Setpoint", setPoint);
-            SmartDashboard::PutNumber("Current Position - Right", 0);
-            SmartDashboard::PutNumber("Current Position - Left", 0);
+            SmartDashboard::PutNumber ("Setpoint - Right", 0);
+            SmartDashboard::PutNumber ("Setpoint - Left", 0);
+            SmartDashboard::PutNumber ("Current Position - Right", 0);
+            SmartDashboard::PutNumber ("Current Position - Left", 0);
 
-            _rMotor->GetSensorCollection().SetQuadraturePosition(0, checkTimeout);
-            _lMotor->GetSensorCollection().SetQuadraturePosition(0, checkTimeout);
+            _rMotor->GetSensorCollection ().SetQuadraturePosition (0, checkTimeout);
+            _lMotor->GetSensorCollection ().SetQuadraturePosition (0, checkTimeout);
         }
 
         void TestPeriodic ()
@@ -99,20 +100,16 @@ class Robot : public frc::IterativeRobot
                 pConstant = SmartDashboard::GetNumber ("P", pConstant);
                 iConstant = SmartDashboard::GetNumber ("I", pConstant);
                 dConstant = SmartDashboard::GetNumber ("D", pConstant);
-                setPoint = SmartDashboard::GetNumber ("Setpoint", setPoint);
-
+                SmartDashboard::PutNumber ("Current Position - Right", _rMotor->GetSensorCollection ().GetQuadraturePosition ());
+                SmartDashboard::PutNumber ("Current Position - Left", _lMotor->GetSensorCollection ().GetQuadraturePosition ());
+                _lMotor->Config_kP (0, pConstant, checkTimeout);
+                _lMotor->Config_kI (0, iConstant, checkTimeout);
+                _lMotor->Config_kD (0, dConstant, checkTimeout);
+                _rMotor->Config_kP (0, pConstant, checkTimeout);
+                _rMotor->Config_kI (0, iConstant, checkTimeout);
+                _rMotor->Config_kD (0, dConstant, checkTimeout);
             }
-
-            _lMotor->Config_kP (0, pConstant, checkTimeout);
-            _lMotor->Config_kI (0, iConstant, checkTimeout);
-            _lMotor->Config_kD (0, dConstant, checkTimeout);
-
-            _rMotor->Config_kP (0, pConstant, checkTimeout);
-            _rMotor->Config_kI (0, iConstant, checkTimeout);
-            _rMotor->Config_kD (0, dConstant, checkTimeout);
-
-            _rMotor->Set(ctre::phoenix::motorcontrol::ControlMode::Position, setPoint);
-            _lMotor->Set(ctre::phoenix::motorcontrol::ControlMode::Position, setPoint);
+            myRobot->PIDDrive(SmartDashboard::GetNumber("Setpoint - Left", 0), SmartDashboard::GetNumber("Setpoint - Right", 0));
         }
 };
 

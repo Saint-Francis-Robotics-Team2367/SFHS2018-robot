@@ -36,3 +36,9 @@ void SFDrive::ArcadeDrive(double xSpeed, double zRotation) {
 	m_rightMotor->Set(-rightMotorOutput);
 
 }
+
+void SFDrive::PIDDrive(double _lMotorSet, double _rMotorSet)
+{
+    m_leftMotor->Set(ctre::phoenix::motorcontrol::ControlMode::Position, _lMotorSet);
+    m_rightMotor->Set(ctre::phoenix::motorcontrol::ControlMode::Position, _rMotorSet);
+}
