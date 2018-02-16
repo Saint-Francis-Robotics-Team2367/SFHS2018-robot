@@ -33,7 +33,7 @@ void SFDrive::ArcadeDrive(double xSpeed, double zRotation) {
 	m_leftMotorFront->Set(leftMotorOutput);
 	m_leftMotorBack->Set(leftMotorOutput);
 	m_rightMotorFront->Set(-rightMotorOutput);
-	m_rightMotorBack->Set(leftMotorOutput);
+	m_rightMotorBack->Set(-rightMotorOutput);
 
 }
 

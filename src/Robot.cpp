@@ -39,7 +39,7 @@ class Robot : public frc::IterativeRobot
         int timeOut = 100;
         int packetsReceived = 0;
     private:
-        AHRS * ahrs = new AHRS (SPI::Port::kMXP);
+        AHRS * ahrs;
         WPI_TalonSRX * _lMotorFront = new WPI_TalonSRX (lMotorFrontNum);
         WPI_TalonSRX * _lMotorBack = new WPI_TalonSRX (lMotorBackNum);
         WPI_TalonSRX * _rMotorFront = new WPI_TalonSRX (rMotorFrontNum);
@@ -80,7 +80,7 @@ class Robot : public frc::IterativeRobot
 
         void TeleopPeriodic ()
         {
-            myRobot->ArcadeDrive (scale * stick->GetRawAxis (1), (stick->GetRawAxis (4) > 0 ? 1 : -1) * stick->GetRawAxis (4) * stick->GetRawAxis (4));
+            myRobot->ArcadeDrive (scale * stick->GetRawAxis (1), -(stick->GetRawAxis (4) > 0 ? 1 : -1) * stick->GetRawAxis (4) * stick->GetRawAxis (4));
         }
 
         void AutonomousInit ()
