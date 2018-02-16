@@ -101,8 +101,7 @@ class Robot : public frc::IterativeRobot
             SmartDashboard::PutNumber ("P", pConstant);
             SmartDashboard::PutNumber ("I", iConstant);
             SmartDashboard::PutNumber ("D", dConstant);
-            SmartDashboard::PutNumber ("Setpoint - Right", 0);
-            SmartDashboard::PutNumber ("Setpoint - Left", 0);
+            SmartDashboard::PutNumber ("Setpoint", 0);
             SmartDashboard::PutNumber ("Current Position - Right", 0);
             SmartDashboard::PutNumber ("Current Position - Left", 0);
 
@@ -133,7 +132,7 @@ class Robot : public frc::IterativeRobot
                 _rMotorBack->Config_kD (0, dConstant, checkTimeout);
             }
             packetsReceived++;
-            myRobot->PIDDrive (SmartDashboard::GetNumber ("Setpoint - Left", 0), SmartDashboard::GetNumber ("Setpoint - Right", 0));
+            myRobot->PIDDrive (SmartDashboard::GetNumber ("Setpoint", 0), SmartDashboard::GetNumber ("Setpoint", 0));
         }
 };
 

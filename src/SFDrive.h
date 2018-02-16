@@ -12,6 +12,7 @@ private: //MEMBER VARIABLES
 	WPI_TalonSRX * m_rightMotorFront;
         WPI_TalonSRX * m_rightMotorBack;
 	AHRS * m_ahrs;
+	double m_deadband = 0.04;
 
 public:
 	SFDrive(WPI_TalonSRX * lMotorFront, WPI_TalonSRX * lMotorBack, WPI_TalonSRX * rMotorFront, WPI_TalonSRX * rMotorBack, AHRS * ahrs = NULL);

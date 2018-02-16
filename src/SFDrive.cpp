@@ -8,6 +8,11 @@ void SFDrive::ArcadeDrive(double xSpeed, double zRotation) {
 	double leftMotorOutput;
 	double rightMotorOutput;
 
+	if(abs(xSpeed) < m_deadband)
+	    xSpeed = 0;
+	if(abs(zRotation) < m_deadband)
+	    zRotation = 0;
+
 	double maxInput = std::copysign(std::max(std::abs(xSpeed), std::abs(zRotation)), xSpeed);
 
 	if (xSpeed >= 0.0) {
