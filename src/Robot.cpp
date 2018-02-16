@@ -39,7 +39,7 @@ class Robot : public frc::IterativeRobot
         int timeOut = 100;
         int packetsReceived = 0;
     private:
-        AHRS * ahrs;
+        AHRS * ahrs = new AHRS (SPI::Port::kMXP);
         WPI_TalonSRX * _lMotorFront = new WPI_TalonSRX (lMotorFrontNum);
         WPI_TalonSRX * _lMotorBack = new WPI_TalonSRX (lMotorBackNum);
         WPI_TalonSRX * _rMotorFront = new WPI_TalonSRX (rMotorFrontNum);
@@ -114,8 +114,8 @@ class Robot : public frc::IterativeRobot
             if (packetsReceived % 100 == 0) //Update PID and setpoint values from shuffleboard
             {
                 pConstant = SmartDashboard::GetNumber ("P", pConstant);
-                iConstant = SmartDashboard::GetNumber ("I", pConstant);
-                dConstant = SmartDashboard::GetNumber ("D", pConstant);
+                iConstant = SmartDashboard::GetNumber ("I", iConstant);
+                dConstant = SmartDashboard::GetNumber ("D", dConstant);
                 SmartDashboard::PutNumber ("Current Position - Right", _rMotorFront->GetSensorCollection ().GetQuadraturePosition ());
                 SmartDashboard::PutNumber ("Current Position - Left", _lMotorFront->GetSensorCollection ().GetQuadraturePosition ());
                 _lMotorFront->Config_kP (0, pConstant, checkTimeout);
