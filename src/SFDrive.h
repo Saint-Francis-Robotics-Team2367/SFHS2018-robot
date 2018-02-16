@@ -1,4 +1,5 @@
 #include <ctre/Phoenix.h>
+#include "ahrs.h"
 
 #ifndef SRC_SFDRIVE_H_
 #define SRC_SFDRIVE_H_
@@ -6,11 +7,14 @@
 class SFDrive
 {
 private: //MEMBER VARIABLES
-	WPI_TalonSRX * m_leftMotor;
-	WPI_TalonSRX * m_rightMotor;
+	WPI_TalonSRX * m_leftMotorFront;
+	WPI_TalonSRX * m_leftMotorBack;
+	WPI_TalonSRX * m_rightMotorFront;
+        WPI_TalonSRX * m_rightMotorBack;
+	AHRS * m_ahrs;
 
 public:
-	SFDrive(WPI_TalonSRX * lMotor, WPI_TalonSRX * rMotor);
+	SFDrive(WPI_TalonSRX * lMotorFront, WPI_TalonSRX * lMotorBack, WPI_TalonSRX * rMotorFront, WPI_TalonSRX * rMotorBack, AHRS * ahrs = NULL);
 	void ArcadeDrive(double xSpeed, double zRotation);
 	void PIDDrive(double _rMotorSet, double _lMotorSet);
 };

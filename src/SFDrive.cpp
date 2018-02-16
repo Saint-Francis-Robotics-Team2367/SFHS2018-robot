@@ -1,10 +1,8 @@
 #include <SFDrive.h>
 #include <ctre/Phoenix.h>
 
-SFDrive::SFDrive(WPI_TalonSRX * lMotor, WPI_TalonSRX * rMotor) :
-		m_leftMotor(lMotor), m_rightMotor(rMotor) {
-
-}
+SFDrive::SFDrive(WPI_TalonSRX * lMotorFront, WPI_TalonSRX * lMotorBack, WPI_TalonSRX * rMotorFront, WPI_TalonSRX * rMotorBack, AHRS * ahrs) :
+		m_leftMotorFront(lMotorFront), m_leftMotorBack(lMotorBack), m_rightMotorFront(rMotorFront), m_rightMotorBack(rMotorBack), m_ahrs(ahrs) { }
 
 void SFDrive::ArcadeDrive(double xSpeed, double zRotation) {
 	double leftMotorOutput;
@@ -32,13 +30,17 @@ void SFDrive::ArcadeDrive(double xSpeed, double zRotation) {
 		}
 	}
 
-	m_leftMotor->Set(leftMotorOutput);
-	m_rightMotor->Set(-rightMotorOutput);
+	m_leftMotorFront->Set(leftMotorOutput);
+	m_leftMotorBack->Set(leftMotorOutput);
+	m_rightMotorFront->Set(-rightMotorOutput);
+	m_rightMotorBack->Set(leftMotorOutput);
 
 }
 
 void SFDrive::PIDDrive(double _lMotorSet, double _rMotorSet)
 {
-    m_leftMotor->Set(ctre::phoenix::motorcontrol::ControlMode::Position, _lMotorSet);
-    m_rightMotor->Set(ctre::phoenix::motorcontrol::ControlMode::Position, _rMotorSet);
+    m_leftMotorFront->Set(ctre::phoenix::motorcontrol::ControlMode::Position, _lMotorSet);
+    m_leftMotorBack->Set(ctre::phoenix::motorcontrol::ControlMode::Position, _lMotorSet);
+    m_rightMotorFront->Set(ctre::phoenix::motorcontrol::ControlMode::Position, _rMotorSet);
+    m_rightMotorBack->Set(ctre::phoenix::motorcontrol::ControlMode::Position, _rMotorSet);
 }
