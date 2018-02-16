@@ -25,26 +25,44 @@
 class Robot : public frc::IterativeRobot
 {
     public:
+        //Motor channels
         const int joystickNum = 0;
         const int rMotorFrontNum = 5;
         const int rMotorBackNum = 4;
         const int lMotorFrontNum = 3;
         const int lMotorBackNum = 2;
+        const int lCubeIntakeNum = 1;
+        const int rCubeIntakeNum = 7;
+        const int cubeManipAngleNum = 8;
+        const int cubeManipAngleLimitNum = 1;
+        //Motor tuning constants
         double scale = 1;
         const double TICKS_PER_INCH = 325.95;
-        double pConstant = .1;
-        double iConstant = 0.001;
-        double dConstant = 0;
+        double pConstantDrive = .1;
+        double iConstantDrive = 0.001;
+        double dConstantDrive = 0;
+        const double MAX_ANGLE_TICKS = 1000;
+        double pConstantAngle = .1;
+        double iConstantAngle = 0.001;
+        double dConstantAngle = 0;
+        double setPointDrive = 0;
+        double setPointAngle = MAX_ANGLE_TICKS;
+        //Misc
         int checkTimeout = 0;
         int timeOut = 100;
         int packetsReceived = 0;
     private:
-        AHRS * ahrs = new AHRS (SPI::Port::kMXP);
+        //Initialize variables
+        AHRS * ahrs; //= new AHRS (SPI::Port::kMXP);
         WPI_TalonSRX * _lMotorFront = new WPI_TalonSRX (lMotorFrontNum);
         WPI_TalonSRX * _lMotorBack = new WPI_TalonSRX (lMotorBackNum);
         WPI_TalonSRX * _rMotorFront = new WPI_TalonSRX (rMotorFrontNum);
         WPI_TalonSRX * _rMotorBack = new WPI_TalonSRX (rMotorBackNum);
+        WPI_TalonSRX * _lCubeIntake = new WPI_TalonSRX (lCubeIntakeNum);
+        WPI_TalonSRX * _rCubeIntake = new WPI_TalonSRX (rCubeIntakeNum);
+        WPI_TalonSRX * _cubeManipAngle = new WPI_TalonSRX (cubeManipAngleNum);
 
+        Counter * cubeAngleLimit = new Counter (new DigitalInput (cubeManipAngleLimitNum));
         SFDrive *myRobot = new SFDrive (_lMotorFront, _lMotorBack, _rMotorFront, _rMotorBack, ahrs);
         Joystick *stick = new Joystick (joystickNum);
 
@@ -56,21 +74,27 @@ class Robot : public frc::IterativeRobot
             _lMotorBack->ConfigSelectedFeedbackSensor (qE, 0, checkTimeout);
             _rMotorFront->ConfigSelectedFeedbackSensor (qE, 0, checkTimeout);
             _rMotorBack->ConfigSelectedFeedbackSensor (qE, 0, checkTimeout);
+            _cubeManipAngle->ConfigSelectedFeedbackSensor (qE, 0, checkTimeout);
 
             //used for inverting motors
-            _rMotorFront->SetSensorPhase(true);
-            _rMotorBack->SetSensorPhase(true);
-            _lMotorFront->SetSensorPhase(true);
-            _lMotorBack->SetSensorPhase(true);
+            _rMotorFront->SetSensorPhase (true);
+            _rMotorBack->SetSensorPhase (true);
+            _lMotorFront->SetSensorPhase (true);
+            _lMotorBack->SetSensorPhase (true);
+            _cubeManipAngle->SetSensorPhase (false);
 
             _rMotorFront->SelectProfileSlot (0, 0);
             _rMotorBack->SelectProfileSlot (0, 0);
             _lMotorFront->SelectProfileSlot (0, 0);
             _lMotorBack->SelectProfileSlot (0, 0);
+            _cubeManipAngle->SelectProfileSlot (0, 0);
+
+            cubeAngleLimit->Reset ();
         }
 
         void TeleopInit ()
         {
+            //Set encoder positions to 0
             _rMotorFront->GetSensorCollection ().SetQuadraturePosition (0, checkTimeout);
             _rMotorBack->GetSensorCollection ().SetQuadraturePosition (0, checkTimeout);
             _lMotorFront->GetSensorCollection ().SetQuadraturePosition (0, checkTimeout);
@@ -81,14 +105,13 @@ class Robot : public frc::IterativeRobot
         void TeleopPeriodic ()
         {
             myRobot->ArcadeDrive (scale * stick->GetRawAxis (1), -(stick->GetRawAxis (4) > 0 ? 1 : -1) * stick->GetRawAxis (4) * stick->GetRawAxis (4));
+
         }
 
         void AutonomousInit ()
         {
-            _rMotorFront->GetSensorCollection ().SetQuadraturePosition (0, checkTimeout);
-            _rMotorBack->GetSensorCollection ().SetQuadraturePosition (0, checkTimeout);
-            _lMotorFront->GetSensorCollection ().SetQuadraturePosition (0, checkTimeout);
-            _lMotorBack->GetSensorCollection ().SetQuadraturePosition (0, checkTimeout);
+            ConfigPIDS ();
+            DriverStation::ReportError("Boop");
         }
 
         void AutonomousPeriodic ()
@@ -96,43 +119,101 @@ class Robot : public frc::IterativeRobot
 
         }
 
-        void TestInit ()
+        void TestInit()
         {
-            SmartDashboard::PutNumber ("P", pConstant);
-            SmartDashboard::PutNumber ("I", iConstant);
-            SmartDashboard::PutNumber ("D", dConstant);
-            SmartDashboard::PutNumber ("Setpoint", 0);
+            //ConfigPIDS ();
+            //Put PID values in ShuffleBoard
+            SmartDashboard::PutNumber ("P Drive", pConstantDrive);
+            SmartDashboard::PutNumber ("I Drive", iConstantDrive);
+            SmartDashboard::PutNumber ("D Drive", dConstantDrive);
+            SmartDashboard::PutNumber ("P Angle", pConstantAngle);
+            SmartDashboard::PutNumber ("I Angle", iConstantAngle);
+            SmartDashboard::PutNumber ("D Angle", dConstantAngle);
+            SmartDashboard::PutNumber ("Setpoint Drive", 0);
+            SmartDashboard::PutNumber ("Setpoint Angle", MAX_ANGLE_TICKS);
             SmartDashboard::PutNumber ("Current Position - Right", 0);
             SmartDashboard::PutNumber ("Current Position - Left", 0);
-
-            _rMotorFront->GetSensorCollection ().SetQuadraturePosition (0, checkTimeout);
-            _lMotorFront->GetSensorCollection ().SetQuadraturePosition (0, checkTimeout);
+            SmartDashboard::PutNumber ("Current Position - Angle", MAX_ANGLE_TICKS);
         }
 
         void TestPeriodic ()
         {
             if (packetsReceived % 100 == 0) //Update PID and setpoint values from shuffleboard
             {
-                pConstant = SmartDashboard::GetNumber ("P", pConstant);
-                iConstant = SmartDashboard::GetNumber ("I", iConstant);
-                dConstant = SmartDashboard::GetNumber ("D", dConstant);
+                //Every 100 packets (2 seconds), update P, I, D values
+                pConstantDrive = SmartDashboard::GetNumber ("P Drive", pConstantDrive);
+                iConstantDrive = SmartDashboard::GetNumber ("I Drive", iConstantDrive);
+                dConstantDrive = SmartDashboard::GetNumber ("D Drive", dConstantDrive);
+                pConstantAngle = SmartDashboard::GetNumber ("P Angle", pConstantAngle);
+                iConstantAngle = SmartDashboard::GetNumber ("I Angle", iConstantAngle);
+                dConstantAngle = SmartDashboard::GetNumber ("D Angle", dConstantAngle);
+                setPointDrive = SmartDashboard::GetNumber("Setpoint Drive", setPointDrive);
+                setPointAngle = SmartDashboard::GetNumber("Setpoint Angle", setPointAngle);
                 SmartDashboard::PutNumber ("Current Position - Right", _rMotorFront->GetSensorCollection ().GetQuadraturePosition ());
                 SmartDashboard::PutNumber ("Current Position - Left", _lMotorFront->GetSensorCollection ().GetQuadraturePosition ());
-                _lMotorFront->Config_kP (0, pConstant, checkTimeout);
-                _lMotorFront->Config_kI (0, iConstant, checkTimeout);
-                _lMotorFront->Config_kD (0, dConstant, checkTimeout);
-                _lMotorBack->Config_kP (0, pConstant, checkTimeout);
-                _lMotorBack->Config_kI (0, iConstant, checkTimeout);
-                _lMotorBack->Config_kD (0, dConstant, checkTimeout);
-                _rMotorFront->Config_kP (0, pConstant, checkTimeout);
-                _rMotorFront->Config_kI (0, iConstant, checkTimeout);
-                _rMotorFront->Config_kD (0, dConstant, checkTimeout);
-                _rMotorBack->Config_kP (0, pConstant, checkTimeout);
-                _rMotorBack->Config_kI (0, iConstant, checkTimeout);
-                _rMotorBack->Config_kD (0, dConstant, checkTimeout);
+                SmartDashboard::PutNumber ("Current Position - Angle", _cubeManipAngle->GetSensorCollection().GetQuadraturePosition());
+                _lMotorFront->Config_kP (0, pConstantDrive, checkTimeout);
+                _lMotorFront->Config_kI (0, iConstantDrive, checkTimeout);
+                _lMotorFront->Config_kD (0, dConstantDrive, checkTimeout);
+                _lMotorBack->Config_kP (0, pConstantDrive, checkTimeout);
+                _lMotorBack->Config_kI (0, iConstantDrive, checkTimeout);
+                _lMotorBack->Config_kD (0, dConstantDrive, checkTimeout);
+                _rMotorFront->Config_kP (0, pConstantDrive, checkTimeout);
+                _rMotorFront->Config_kI (0, iConstantDrive, checkTimeout);
+                _rMotorFront->Config_kD (0, dConstantDrive, checkTimeout);
+                _rMotorBack->Config_kP (0, pConstantDrive, checkTimeout);
+                _rMotorBack->Config_kI (0, iConstantDrive, checkTimeout);
+                _rMotorBack->Config_kD (0, dConstantDrive, checkTimeout);
+                _cubeManipAngle->Config_kP (0, pConstantAngle, checkTimeout);
+                _cubeManipAngle->Config_kI (0, iConstantAngle, checkTimeout);
+                _cubeManipAngle->Config_kD (0, dConstantAngle, checkTimeout);
             }
+
             packetsReceived++;
-            myRobot->PIDDrive (SmartDashboard::GetNumber ("Setpoint", 0), SmartDashboard::GetNumber ("Setpoint", 0));
+            myRobot->PIDDrive (setPointDrive, setPointDrive);
+            if(setPointAngle < MAX_ANGLE_TICKS && setPointAngle > 0)
+                _cubeManipAngle->Set(ctre::phoenix::motorcontrol::ControlMode::Position, setPointAngle);
+
+        }
+
+        void ConfigPIDS ()
+        {
+            _rMotorFront->GetSensorCollection ().SetQuadraturePosition (0, checkTimeout);
+            _rMotorBack->GetSensorCollection ().SetQuadraturePosition (0, checkTimeout);
+            _lMotorFront->GetSensorCollection ().SetQuadraturePosition (0, checkTimeout);
+            _lMotorBack->GetSensorCollection ().SetQuadraturePosition (0, checkTimeout);
+
+            _lMotorFront->Config_kP (0, pConstantDrive, checkTimeout);
+            _lMotorFront->Config_kI (0, iConstantDrive, checkTimeout);
+            _lMotorFront->Config_kD (0, dConstantDrive, checkTimeout);
+            _lMotorBack->Config_kP (0, pConstantDrive, checkTimeout);
+            _lMotorBack->Config_kI (0, iConstantDrive, checkTimeout);
+            _lMotorBack->Config_kD (0, dConstantDrive, checkTimeout);
+            _rMotorFront->Config_kP (0, pConstantDrive, checkTimeout);
+            _rMotorFront->Config_kI (0, iConstantDrive, checkTimeout);
+            _rMotorFront->Config_kD (0, dConstantDrive, checkTimeout);
+            _rMotorBack->Config_kP (0, pConstantDrive, checkTimeout);
+            _rMotorBack->Config_kI (0, iConstantDrive, checkTimeout);
+            _rMotorBack->Config_kD (0, dConstantDrive, checkTimeout);
+            _cubeManipAngle->Config_kP (0, pConstantAngle, checkTimeout);
+            _cubeManipAngle->Config_kI (0, iConstantAngle, checkTimeout);
+            _cubeManipAngle->Config_kD (0, dConstantAngle, checkTimeout);
+
+            //Raise angle motor until limit is triggered, and then set position to what it is when maxed
+            /*while (!cubeAngleLimit->Get ())
+                _cubeManipAngle->Set (0.1);
+            cubeAngleLimit->Reset ();
+            _cubeManipAngle->GetSensorCollection ().SetQuadraturePosition (MAX_ANGLE_TICKS, checkTimeout);
+            */
+            /*
+             * NOTE - RIGHT NOW THIS IS SUPPOSED TO HAPPEN SUPER SLOWLY
+             * THIS IS BECAUSE, AFTER THE LIMIT SWITCH IS INSTALLED, IT MAY NOT BE SET UP CORRECTLY
+             * SOMEONE SHOULD WATCH THE MANIPULATOR AND MAKE SURE THE SWITCH IS ACTUALLY TRIGGERED
+             * IF THE MANIPULATOR GOES PAST ITS PATH OF TRAVEL, E-STOP THE ROBOT
+             * AT COMPETITION, THIS SHOULD BE SET TO FULL SPEED
+             */
+            setPointAngle = MAX_ANGLE_TICKS;
+            setPointDrive = 0;
         }
 };
 
