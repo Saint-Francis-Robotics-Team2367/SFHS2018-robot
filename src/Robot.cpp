@@ -68,6 +68,13 @@ class Robot : public frc::IterativeRobot
 
         void RobotInit ()
         {
+            //used for inverting motors
+            _rMotorFront->SetSensorPhase (true);
+            _rMotorBack->SetSensorPhase (true);
+            _lMotorFront->SetSensorPhase (true);
+            _lMotorBack->SetSensorPhase (true);
+            _cubeManipAngle->SetSensorPhase (false);
+
             //used to config the motor controllers for QuadEncoders(type of encoder)
             ctre::phoenix::motorcontrol::FeedbackDevice qE = QuadEncoder;
             _lMotorFront->ConfigSelectedFeedbackSensor (qE, 0, checkTimeout);
@@ -75,13 +82,6 @@ class Robot : public frc::IterativeRobot
             _rMotorFront->ConfigSelectedFeedbackSensor (qE, 0, checkTimeout);
             _rMotorBack->ConfigSelectedFeedbackSensor (qE, 0, checkTimeout);
             _cubeManipAngle->ConfigSelectedFeedbackSensor (qE, 0, checkTimeout);
-
-            //used for inverting motors
-            _rMotorFront->SetSensorPhase (true);
-            _rMotorBack->SetSensorPhase (true);
-            _lMotorFront->SetSensorPhase (true);
-            _lMotorBack->SetSensorPhase (true);
-            _cubeManipAngle->SetSensorPhase (false);
 
             _rMotorFront->SelectProfileSlot (0, 0);
             _rMotorBack->SelectProfileSlot (0, 0);
@@ -94,12 +94,14 @@ class Robot : public frc::IterativeRobot
 
         void TeleopInit ()
         {
+            DriverStation::ReportError("TeleopInit Started");
             //Set encoder positions to 0
             _rMotorFront->GetSensorCollection ().SetQuadraturePosition (0, checkTimeout);
             _rMotorBack->GetSensorCollection ().SetQuadraturePosition (0, checkTimeout);
             _lMotorFront->GetSensorCollection ().SetQuadraturePosition (0, checkTimeout);
             _lMotorBack->GetSensorCollection ().SetQuadraturePosition (0, checkTimeout);
             myRobot->ArcadeDrive (0.0, 0.0);
+            DriverStation::ReportError("TeleopInit Completed");
         }
 
         void TeleopPeriodic ()
@@ -110,8 +112,9 @@ class Robot : public frc::IterativeRobot
 
         void AutonomousInit ()
         {
+            DriverStation::ReportError("AutonInit Started");
             ConfigPIDS ();
-            DriverStation::ReportError("Boop");
+            DriverStation::ReportError("AutonInit Completed");
         }
 
         void AutonomousPeriodic ()
@@ -119,9 +122,10 @@ class Robot : public frc::IterativeRobot
 
         }
 
-        void TestInit()
+        void TestInit ()
         {
-            //ConfigPIDS ();
+            DriverStation::ReportError("TestInit Started");
+            ConfigPIDS ();
             //Put PID values in ShuffleBoard
             SmartDashboard::PutNumber ("P Drive", pConstantDrive);
             SmartDashboard::PutNumber ("I Drive", iConstantDrive);
@@ -134,6 +138,7 @@ class Robot : public frc::IterativeRobot
             SmartDashboard::PutNumber ("Current Position - Right", 0);
             SmartDashboard::PutNumber ("Current Position - Left", 0);
             SmartDashboard::PutNumber ("Current Position - Angle", MAX_ANGLE_TICKS);
+            DriverStation::ReportError("TestInit Completed");
         }
 
         void TestPeriodic ()
@@ -147,11 +152,11 @@ class Robot : public frc::IterativeRobot
                 pConstantAngle = SmartDashboard::GetNumber ("P Angle", pConstantAngle);
                 iConstantAngle = SmartDashboard::GetNumber ("I Angle", iConstantAngle);
                 dConstantAngle = SmartDashboard::GetNumber ("D Angle", dConstantAngle);
-                setPointDrive = SmartDashboard::GetNumber("Setpoint Drive", setPointDrive);
-                setPointAngle = SmartDashboard::GetNumber("Setpoint Angle", setPointAngle);
+                setPointDrive = SmartDashboard::GetNumber ("Setpoint Drive", setPointDrive);
+                setPointAngle = SmartDashboard::GetNumber ("Setpoint Angle", setPointAngle);
                 SmartDashboard::PutNumber ("Current Position - Right", _rMotorFront->GetSensorCollection ().GetQuadraturePosition ());
                 SmartDashboard::PutNumber ("Current Position - Left", _lMotorFront->GetSensorCollection ().GetQuadraturePosition ());
-                SmartDashboard::PutNumber ("Current Position - Angle", _cubeManipAngle->GetSensorCollection().GetQuadraturePosition());
+                SmartDashboard::PutNumber ("Current Position - Angle", _cubeManipAngle->GetSensorCollection ().GetQuadraturePosition ());
                 _lMotorFront->Config_kP (0, pConstantDrive, checkTimeout);
                 _lMotorFront->Config_kI (0, iConstantDrive, checkTimeout);
                 _lMotorFront->Config_kD (0, dConstantDrive, checkTimeout);
@@ -170,14 +175,16 @@ class Robot : public frc::IterativeRobot
             }
 
             packetsReceived++;
-            myRobot->PIDDrive (setPointDrive, setPointDrive);
-            if(setPointAngle < MAX_ANGLE_TICKS && setPointAngle > 0)
-                _cubeManipAngle->Set(ctre::phoenix::motorcontrol::ControlMode::Position, setPointAngle);
+            if (packetsReceived == 200)
+                myRobot->PIDDrive (setPointDrive, setPointDrive);
+            if (setPointAngle < MAX_ANGLE_TICKS && setPointAngle > 0)
+                _cubeManipAngle->Set (ctre::phoenix::motorcontrol::ControlMode::Position, setPointAngle);
 
         }
 
         void ConfigPIDS ()
         {
+            DriverStation::ReportError("PID Config Started");
             _rMotorFront->GetSensorCollection ().SetQuadraturePosition (0, checkTimeout);
             _rMotorBack->GetSensorCollection ().SetQuadraturePosition (0, checkTimeout);
             _lMotorFront->GetSensorCollection ().SetQuadraturePosition (0, checkTimeout);
@@ -200,10 +207,12 @@ class Robot : public frc::IterativeRobot
             _cubeManipAngle->Config_kD (0, dConstantAngle, checkTimeout);
 
             //Raise angle motor until limit is triggered, and then set position to what it is when maxed
-            /*while (!cubeAngleLimit->Get ())
-                _cubeManipAngle->Set (0.1);
-            cubeAngleLimit->Reset ();
-            _cubeManipAngle->GetSensorCollection ().SetQuadraturePosition (MAX_ANGLE_TICKS, checkTimeout);
+             /*while (!cubeAngleLimit->Get ())
+             {
+                 _cubeManipAngle->Set (0.1);
+             }
+             cubeAngleLimit->Reset ();
+             _cubeManipAngle->GetSensorCollection ().SetQuadraturePosition (MAX_ANGLE_TICKS, checkTimeout);
             */
             /*
              * NOTE - RIGHT NOW THIS IS SUPPOSED TO HAPPEN SUPER SLOWLY
@@ -214,6 +223,7 @@ class Robot : public frc::IterativeRobot
              */
             setPointAngle = MAX_ANGLE_TICKS;
             setPointDrive = 0;
+            DriverStation::ReportError("PID Config Completed");
         }
 };
 
