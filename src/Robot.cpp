@@ -35,7 +35,7 @@ class Robot : public frc::IterativeRobot
         const int lMotorBackNum = 2;
         const int lCubeIntakeNum = 1;
         const int rCubeIntakeNum = 2;
-        const int cubeManipAngleNum = 8;
+        const int cubeManipAngleNum = 1;
         const int cubeManipAngleLimitNum = 1;
         //Motor tuning constants
         double scale = 1;
@@ -124,6 +124,18 @@ class Robot : public frc::IterativeRobot
             {
              	this->_lCubeIntake->Set(0);
                 this->_rCubeIntake->Set(0);
+            }
+            if(stick->GetRawButton(1)) // a button
+            {
+            	this->_cubeManipAngle->Set(1);
+            }
+            else if(stick->GetRawButton(4)) // y button
+            {
+            	this->_cubeManipAngle->Set(-1);
+
+            }
+            else{
+            	this->_cubeManipAngle->Set(0);
             }
         }
 
