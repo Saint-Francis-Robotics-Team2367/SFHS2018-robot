@@ -22,6 +22,8 @@
 #include "AHRS.h"
 #include "SFDrive.h"
 
+#define TRIGGER_DEADZONE 0.1
+
 class Robot : public frc::IterativeRobot
 {
     public:
@@ -32,7 +34,7 @@ class Robot : public frc::IterativeRobot
         const int lMotorFrontNum = 3;
         const int lMotorBackNum = 2;
         const int lCubeIntakeNum = 1;
-        const int rCubeIntakeNum = 7;
+        const int rCubeIntakeNum = 2;
         const int cubeManipAngleNum = 8;
         const int cubeManipAngleLimitNum = 1;
         //Motor tuning constants
@@ -58,8 +60,8 @@ class Robot : public frc::IterativeRobot
         WPI_TalonSRX * _lMotorBack = new WPI_TalonSRX (lMotorBackNum);
         WPI_TalonSRX * _rMotorFront = new WPI_TalonSRX (rMotorFrontNum);
         WPI_TalonSRX * _rMotorBack = new WPI_TalonSRX (rMotorBackNum);
-        WPI_TalonSRX * _lCubeIntake = new WPI_TalonSRX (lCubeIntakeNum);
-        WPI_TalonSRX * _rCubeIntake = new WPI_TalonSRX (rCubeIntakeNum);
+        Spark * _lCubeIntake = new Spark (lCubeIntakeNum);
+        Spark * _rCubeIntake = new Spark (rCubeIntakeNum);
         WPI_TalonSRX * _cubeManipAngle = new WPI_TalonSRX (cubeManipAngleNum);
 
         Counter * cubeAngleLimit = new Counter (new DigitalInput (cubeManipAngleLimitNum));
@@ -108,6 +110,21 @@ class Robot : public frc::IterativeRobot
         {
             myRobot->ArcadeDrive (scale * stick->GetRawAxis (1), -(stick->GetRawAxis (4) > 0 ? 1 : -1) * stick->GetRawAxis (4) * stick->GetRawAxis (4));
 
+            if(stick->GetRawAxis(3) > TRIGGER_DEADZONE)//right trigger
+            {
+            	this->_lCubeIntake->Set(stick->GetRawAxis(3));
+            	this->_rCubeIntake->Set(stick->GetRawAxis(3));
+            }
+            else if(stick->GetRawAxis(2) > TRIGGER_DEADZONE)//left trigger
+            {
+            	this->_lCubeIntake->Set(-stick->GetRawAxis(2));
+            	this->_rCubeIntake->Set(-stick->GetRawAxis(2));
+            }
+            else
+            {
+             	this->_lCubeIntake->Set(0);
+                this->_rCubeIntake->Set(0);
+            }
         }
 
         void AutonomousInit ()
