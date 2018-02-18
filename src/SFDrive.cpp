@@ -1,8 +1,11 @@
 #include <SFDrive.h>
 #include <ctre/Phoenix.h>
+#include <Timer.h>
 
-SFDrive::SFDrive(WPI_TalonSRX * lMotorFront, WPI_TalonSRX * lMotorBack, WPI_TalonSRX * rMotorFront, WPI_TalonSRX * rMotorBack, AHRS * ahrs) :
-		m_leftMotorFront(lMotorFront), m_leftMotorBack(lMotorBack), m_rightMotorFront(rMotorFront), m_rightMotorBack(rMotorBack), m_ahrs(ahrs) { }
+using namespace frc;
+
+SFDrive::SFDrive(WPI_TalonSRX * lMotor, WPI_TalonSRX * rMotor, AHRS * ahrs) :
+		m_leftMotor(lMotor), m_rightMotor(rMotor), m_ahrs(ahrs) { }
 
 void SFDrive::ArcadeDrive(double xSpeed, double zRotation) {
 	double leftMotorOutput;
@@ -34,18 +37,17 @@ void SFDrive::ArcadeDrive(double xSpeed, double zRotation) {
 			rightMotorOutput = xSpeed - zRotation;
 		}
 	}
-
-	m_leftMotorFront->Set(leftMotorOutput);
-	m_leftMotorBack->Set(leftMotorOutput);
-	m_rightMotorFront->Set(-rightMotorOutput);
-	m_rightMotorBack->Set(-rightMotorOutput);
-
+	m_leftMotor->Set(leftMotorOutput);
+	m_rightMotor->Set(-rightMotorOutput);
 }
 
 void SFDrive::PIDDrive(double _lMotorSet, double _rMotorSet)
 {
-    m_leftMotorFront->Set(ctre::phoenix::motorcontrol::ControlMode::Position, _lMotorSet);
-    m_leftMotorBack->Set(ctre::phoenix::motorcontrol::ControlMode::Position, _lMotorSet);
-    m_rightMotorFront->Set(ctre::phoenix::motorcontrol::ControlMode::Position, _rMotorSet);
-    m_rightMotorBack->Set(ctre::phoenix::motorcontrol::ControlMode::Position, _rMotorSet);
+    double currentRightSetpoint = m_rightMotor->GetSensorCollection().GetQuadraturePosition();
+    double currentLeftSetpoint =  m_leftMotor->GetSensorCollection().GetQuadraturePosition();
+    if(Timer::GetFPGATimestamp() - m_lastPIDTime >= m_PIDStepTime && (currentRightSetpoint != _rMotorSet || currentLeftSetpoint != _lMotorSet))
+    {
+        m_leftMotor->Set(ctre::phoenix::motorcontrol::ControlMode::Position, fabs(currentLeftSetpoint - _lMotorSet) <= m_PIDStepSize? _lMotorSet: currentLeftSetpoint - _lMotorSet > 0? m_PIDStepSize:-m_PIDStepSize);
+        m_rightMotor->Set(ctre::phoenix::motorcontrol::ControlMode::Position, fabs(currentRightSetpoint - _rMotorSet) <= m_PIDStepSize? _rMotorSet: currentRightSetpoint - _rMotorSet > 0? m_PIDStepSize:-m_PIDStepSize);
+    }
 }

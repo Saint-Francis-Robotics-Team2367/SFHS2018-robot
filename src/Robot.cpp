@@ -63,11 +63,15 @@ class Robot : public frc::IterativeRobot
         WPI_TalonSRX * _cubeManipAngle = new WPI_TalonSRX (cubeManipAngleNum);
 
         Counter * cubeAngleLimit = new Counter (new DigitalInput (cubeManipAngleLimitNum));
-        SFDrive *myRobot = new SFDrive (_lMotorFront, _lMotorBack, _rMotorFront, _rMotorBack, ahrs);
+        SFDrive *myRobot = new SFDrive (_lMotorFront, _rMotorFront, ahrs);
         Joystick *stick = new Joystick (joystickNum);
 
         void RobotInit ()
         {
+            //Set back motors to follower mode
+            _rMotorBack->Set(ctre::phoenix::motorcontrol::ControlMode::Follower, rMotorFrontNum);
+            _lMotorBack->Set(ctre::phoenix::motorcontrol::ControlMode::Follower, lMotorFrontNum);
+
             //used for inverting motors
             _rMotorFront->SetSensorPhase (true);
             _rMotorBack->SetSensorPhase (true);
