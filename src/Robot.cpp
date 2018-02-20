@@ -53,6 +53,14 @@ class Robot : public frc::IterativeRobot
         int checkTimeout = 0;
         int timeOut = 100;
         int packetsReceived = 0;
+        //booleans for what position you start in
+        bool left = false;
+        bool right = false;
+        bool center = false;
+
+        std::string gameData;
+        std::string SwitchColor = gameData.substr(1,1);
+
     private:
         //Initialize variables
         AHRS * ahrs; //= new AHRS (SPI::Port::kMXP);
@@ -258,9 +266,33 @@ class Robot : public frc::IterativeRobot
             setPointDrive = 0;
             DriverStation::ReportError("PID Config Completed");
         }
-    	void nothing(){
-        	_lMotorFront->WPI_TalonSRX::Set(ctre::phoenix::motorcontrol::ControlMode::MotionProfile, 0);
+        void move(double inches){
+        	double NumOfTicks = inches * TICKS_PER_INCH;
+        	_lMotorFront->WPI_TalonSRX::Set(ctre::phoenix::motorcontrol::ControlMode::MotionProfile, NumOfTicks);
+        	_rMotorFront->WPI_TalonSRX::Set(ctre::phoenix::motorcontrol::ControlMode::MotionProfile, NumOfTicks);
+        	_lMotorBack->WPI_TalonSRX::Set(ctre::phoenix::motorcontrol::ControlMode::Follower, rMotorFrontNum);
+        	_rMotorBack->WPI_TalonSRX::Set(ctre::phoenix::motorcontrol::ControlMode::Follower, lMotorFrontNum);
         }
+    	void nothing(){
+    		move(0.0);
+        }
+    	void Easy(){
+    		if(left){
+    			move(140);
+    		}
+    		if(right){
+    			move(140(;))
+    		}
+    		if(center){
+    			if(SwitchColor == "r"){
+    				move(48.5);
+    				myRobot->PIDTurn(90);
+    				move(71.23);
+    				myRobot->PIDTurn(270);
+    				move(73);
+
+    		}
+    	}
 };
 
 START_ROBOT_CLASS(Robot)
