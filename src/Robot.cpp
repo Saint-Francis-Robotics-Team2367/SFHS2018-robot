@@ -160,7 +160,7 @@ class Robot : public frc::IterativeRobot
 
         void AutonomousPeriodic ()
         {
-
+        	move(12);
         }
 
         void TestInit ()
@@ -281,7 +281,7 @@ class Robot : public frc::IterativeRobot
     			move(140);
     		}
     		if(right){
-    			move(140(;))
+    			move(140);
     		}
     		if(center){
     			if(SwitchColor == "r"){
@@ -290,7 +290,46 @@ class Robot : public frc::IterativeRobot
     				move(71.23);
     				myRobot->PIDTurn(270);
     				move(73);
+    				//drop cube
+    				_lCubeIntake->Set(1.0);
+    		}
+    			if(SwitchColor == "l"){
+    				move(48.5);
+    				myRobot->PIDTurn(270);
+    				move(71.23);
+    				myRobot->PIDTurn(90);
+    				move(73);
+    				//drop cube
+    			}
+    		}
+    	}
+    	void medium(){
+    		if(left){
+    			if(SwitchColor == " l"){
+    				move(149.5);
+    				myRobot->PIDTurn(90);
+    				move(21.06);
+    				//drop cube
+    			}
+    			if(SwitchColor == "r"){
+    				move(140);
+    			}
+    		}
+    		if(right){
+    			if(SwitchColor == "l"){
+    				move(140);
+    			}
+    			if(SwitchColor == "r"){
+    				move(149.5);
+    				myRobot->PIDTurn(270);
+    				move(21.06);
+    				//drop cube
+    			}
+    		}
+    		if(center){
+    			if(SwitchColor == "r"){
 
+    			}
     		}
     	}
 };
