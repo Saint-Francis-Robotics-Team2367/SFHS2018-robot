@@ -52,7 +52,8 @@ class Robot : public frc::IterativeRobot
         //Misc
         int checkTimeout = 0;
         int timeOut = 100;
-        int packetsReceived = 0;
+        double lastPacket = 0;
+        double lastTestPacket = 0;
         //Starting Data
         std::string position = "";
         std::string gameData = "";
@@ -99,6 +100,8 @@ class Robot : public frc::IterativeRobot
             _lMotorBack->SelectProfileSlot (0, 0);
             _cubeManipAngle->SelectProfileSlot (0, 0);
 
+            SmartDashboard::PutString("Starting Position (Left, Right, Center)", position);
+
             cubeAngleLimit->Reset ();
         }
 
@@ -106,6 +109,12 @@ class Robot : public frc::IterativeRobot
         {
             if (gameData == "")
                 frc::DriverStation::GetInstance ().GetGameSpecificMessage ();
+            if(lastPacket + .5 < Timer().GetFPGATimestamp())
+            {
+                position = SmartDashboard::GetString("Starting Position (Left, Right, Center)", position);
+                lastPacket = Timer().GetFPGATimestamp();
+            }
+
         }
 
         void TeleopInit ()
@@ -202,7 +211,7 @@ class Robot : public frc::IterativeRobot
 
         void TestPeriodic ()
         {
-            if (packetsReceived % 100 == 0) //Update PID and setpoint values from shuffleboard
+            if (lastTestPacket + 0.5 < Timer().GetFPGATimestamp()) //Update PID and setpoint values from shuffleboard
             {
                 //Every 100 packets (2 seconds), update P, I, D values
                 pConstantDrive = SmartDashboard::GetNumber ("P Drive", pConstantDrive);
@@ -231,11 +240,8 @@ class Robot : public frc::IterativeRobot
                 _cubeManipAngle->Config_kP (0, pConstantAngle, checkTimeout);
                 _cubeManipAngle->Config_kI (0, iConstantAngle, checkTimeout);
                 _cubeManipAngle->Config_kD (0, dConstantAngle, checkTimeout);
+                lastTestPacket = Timer().GetFPGATimestamp();
             }
-
-            packetsReceived++;
-            if (packetsReceived == 200)
-                myRobot->PIDDrive (setPointDrive, setPointDrive);
             if (setPointAngle < MAX_ANGLE_TICKS && setPointAngle > 0)
                 _cubeManipAngle->Set (ctre::phoenix::motorcontrol::ControlMode::Position, setPointAngle);
 
@@ -291,7 +297,7 @@ class Robot : public frc::IterativeRobot
                     myRobot->PIDDrive (TICKS_PER_INCH * 48.5);
                     myRobot->PIDTurn (90);
                     myRobot->PIDDrive (TICKS_PER_INCH * 71.23);
-                    myRobot->PIDTurn (270);
+                    myRobot->PIDTurn (-90);
                     myRobot->PIDDrive (TICKS_PER_INCH * 73);
                     //drop cube
                     _lCubeIntake->Set (1.0);
@@ -299,7 +305,7 @@ class Robot : public frc::IterativeRobot
                 if (gameData[0] == "L")
                 {
                     myRobot->PIDDrive (TICKS_PER_INCH * 48.5);
-                    myRobot->PIDTurn (270);
+                    myRobot->PIDTurn (-90);
                     myRobot->PIDDrive (TICKS_PER_INCH * 71.23);
                     myRobot->PIDTurn (90);
                     myRobot->PIDDrive (TICKS_PER_INCH * 73);
@@ -332,7 +338,7 @@ class Robot : public frc::IterativeRobot
                 if (gameData[0] == "R")
                 {
                     myRobot->PIDDrive (TICKS_PER_INCH * 149.5);
-                    myRobot->PIDTurn (270);
+                    myRobot->PIDTurn (-90);
                     myRobot->PIDDrive (TICKS_PER_INCH * 21.06);
                     //drop cube
                 }
@@ -344,25 +350,25 @@ class Robot : public frc::IterativeRobot
                     myRobot->PIDDrive (TICKS_PER_INCH * 48.5);
                     myRobot->PIDTurn (90);
                     myRobot->PIDDrive (TICKS_PER_INCH * 71.23);
-                    myRobot->PIDTurn (270);
+                    myRobot->PIDTurn (-90);
                     myRobot->PIDDrive (TICKS_PER_INCH * 73);
                     //drop cube
                     myRobot->PIDDrive (TICKS_PER_INCH * -73);
                     myRobot->PIDTurn (90);
                     myRobot->PIDDrive (TICKS_PER_INCH * 41.06);
-                    myRobot->PIDTurn (270);
+                    myRobot->PIDTurn (-90);
                     myRobot->PIDDrive (TICKS_PER_INCH * 93);
                 }
                 if (gameData[0] == "L")
                 {
                     myRobot->PIDDrive (TICKS_PER_INCH * 48.5);
-                    myRobot->PIDTurn (270);
+                    myRobot->PIDTurn (-90);
                     myRobot->PIDDrive (TICKS_PER_INCH * 71.23);
                     myRobot->PIDTurn (90);
                     myRobot->PIDDrive (TICKS_PER_INCH * 73);
                     //drop cube
                     myRobot->PIDDrive (TICKS_PER_INCH * -73);
-                    myRobot->PIDTurn (270);
+                    myRobot->PIDTurn (-90);
                     myRobot->PIDDrive (TICKS_PER_INCH * 41.06);
                     myRobot->PIDTurn (90);
                     myRobot->PIDDrive (TICKS_PER_INCH * 93);
@@ -380,7 +386,7 @@ class Robot : public frc::IterativeRobot
                     myRobot->PIDDrive (TICKS_PER_INCH * 21.06);
                     //drop cube
                     myRobot->PIDDrive (TICKS_PER_INCH * -21.06);
-                    myRobot->PIDTurn (270);
+                    myRobot->PIDTurn (-90);
                     myRobot->PIDDrive (TICKS_PER_INCH * 67);
                     myRobot->PIDTurn (90);
                     myRobot->PIDDrive (TICKS_PER_INCH * 46.06);
@@ -396,17 +402,17 @@ class Robot : public frc::IterativeRobot
                     myRobot->PIDDrive (TICKS_PER_INCH * 48.5);
                     myRobot->PIDTurn (90);
                     myRobot->PIDDrive (TICKS_PER_INCH * 232.6);
-                    myRobot->PIDTurn (270);
+                    myRobot->PIDTurn (-90);
                     myRobot->PIDDrive (TICKS_PER_INCH * 101);
-                    myRobot->PIDTurn (270);
+                    myRobot->PIDTurn (-90);
                     myRobot->PIDDrive (TICKS_PER_INCH * 21.06);
                     //drop box
                     myRobot->PIDDrive (TICKS_PER_INCH * -21.06);
                     myRobot->PIDTurn (90);
                     myRobot->PIDDrive (TICKS_PER_INCH * 67);
-                    myRobot->PIDTurn (270);
+                    myRobot->PIDTurn (-90);
                     myRobot->PIDDrive (TICKS_PER_INCH * 46.06);
-                    myRobot->PIDTurn (270);
+                    myRobot->PIDTurn (-90);
                     myRobot->PIDDrive (TICKS_PER_INCH * 7.5);
                     //manipulator up
                     myRobot->PIDDrive (TICKS_PER_INCH * 20.5);
@@ -417,7 +423,7 @@ class Robot : public frc::IterativeRobot
                 if (gameData[0] == "L")
                 {
                     myRobot->PIDDrive (TICKS_PER_INCH * 48.5);
-                    myRobot->PIDTurn (270);
+                    myRobot->PIDTurn (-90);
                     myRobot->PIDDrive (TICKS_PER_INCH * 120.31);
                     myRobot->PIDTurn (90);
                     myRobot->PIDDrive (TICKS_PER_INCH * 101);
@@ -425,7 +431,7 @@ class Robot : public frc::IterativeRobot
                     myRobot->PIDDrive (TICKS_PER_INCH * 21.06);
                     //drop box
                     myRobot->PIDDrive (TICKS_PER_INCH * -21.06);
-                    myRobot->PIDTurn (270);
+                    myRobot->PIDTurn (-90);
                     myRobot->PIDDrive (TICKS_PER_INCH * 67);
                     myRobot->PIDTurn (90);
                     myRobot->PIDDrive (TICKS_PER_INCH * 46.06);
@@ -441,17 +447,17 @@ class Robot : public frc::IterativeRobot
                     myRobot->PIDDrive (TICKS_PER_INCH * 48.5);
                     myRobot->PIDTurn (90);
                     myRobot->PIDDrive (TICKS_PER_INCH * 112.29);
-                    myRobot->PIDTurn (270);
+                    myRobot->PIDTurn (-90);
                     myRobot->PIDDrive (TICKS_PER_INCH * 101);
-                    myRobot->PIDTurn (270);
+                    myRobot->PIDTurn (-90);
                     myRobot->PIDDrive (TICKS_PER_INCH * 21.06);
                     //drop box
                     myRobot->PIDDrive (TICKS_PER_INCH * -21.06);
                     myRobot->PIDTurn (90);
                     myRobot->PIDDrive (TICKS_PER_INCH * 67);
-                    myRobot->PIDTurn (270);
+                    myRobot->PIDTurn (-90);
                     myRobot->PIDDrive (TICKS_PER_INCH * 46.06);
-                    myRobot->PIDTurn (270);
+                    myRobot->PIDTurn (-90);
                     myRobot->PIDDrive (TICKS_PER_INCH * 7.5);
                     //pick up box
                     myRobot->PIDDrive (TICKS_PER_INCH * -7.5);
@@ -464,15 +470,15 @@ class Robot : public frc::IterativeRobot
                 if (gameData[0] == "R")
                 {
                     myRobot->PIDDrive (TICKS_PER_INCH * 149.5);
-                    myRobot->PIDTurn (270);
+                    myRobot->PIDTurn (-90);
                     myRobot->PIDDrive (TICKS_PER_INCH * 21.06);
                     //drop box
                     myRobot->PIDDrive (TICKS_PER_INCH * -21.06);
                     myRobot->PIDTurn (90);
                     myRobot->PIDDrive (TICKS_PER_INCH * 67);
-                    myRobot->PIDTurn (270);
+                    myRobot->PIDTurn (-90);
                     myRobot->PIDDrive (TICKS_PER_INCH * 46.06);
-                    myRobot->PIDTurn (270);
+                    myRobot->PIDTurn (-90);
                     myRobot->PIDDrive (TICKS_PER_INCH * 7.5);
                     //pick up box
                     myRobot->PIDDrive (TICKS_PER_INCH * -7.5);
@@ -482,7 +488,7 @@ class Robot : public frc::IterativeRobot
                 if (gameData[0] == "L")
                 {
                     myRobot->PIDDrive (TICKS_PER_INCH * 48.5);
-                    myRobot->PIDTurn (270);
+                    myRobot->PIDTurn (-90);
                     myRobot->PIDDrive (TICKS_PER_INCH * 232.6);
                     myRobot->PIDTurn (90);
                     myRobot->PIDDrive (TICKS_PER_INCH * 101);
@@ -490,7 +496,7 @@ class Robot : public frc::IterativeRobot
                     myRobot->PIDDrive (TICKS_PER_INCH * 21.06);
                     //drop box
                     myRobot->PIDDrive (TICKS_PER_INCH * -21.06);
-                    myRobot->PIDTurn (270);
+                    myRobot->PIDTurn (-90);
                     myRobot->PIDDrive (TICKS_PER_INCH * 67);
                     myRobot->PIDTurn (90);
                     myRobot->PIDDrive (TICKS_PER_INCH * 46.06);
