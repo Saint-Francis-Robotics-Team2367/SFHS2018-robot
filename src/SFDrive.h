@@ -19,7 +19,7 @@ public:
 	SFDrive(WPI_TalonSRX * lMotor, WPI_TalonSRX * rMotor, AHRS * ahrs = NULL);
 	void ArcadeDrive(double xSpeed, double zRotation);
 	void PIDDrive(double _rMotorSet, double _lMotorSet = _rMotorSet);
-
+	void PIDTurn(double degreesClockwise);
 };
 
 #endif

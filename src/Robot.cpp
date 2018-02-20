@@ -53,7 +53,7 @@ class Robot : public frc::IterativeRobot
         int checkTimeout = 0;
         int timeOut = 100;
         int packetsReceived = 0;
-        //booleans for what position you start in
+        //Starting Data
         std::string position = "";
         std::string gameData = "";
 
@@ -75,8 +75,8 @@ class Robot : public frc::IterativeRobot
         void RobotInit ()
         {
             //Set back motors to follower mode
-            _rMotorBack->Set(ctre::phoenix::motorcontrol::ControlMode::Follower, rMotorFrontNum);
-            _lMotorBack->Set(ctre::phoenix::motorcontrol::ControlMode::Follower, lMotorFrontNum);
+            _rMotorBack->Set (ctre::phoenix::motorcontrol::ControlMode::Follower, rMotorFrontNum);
+            _lMotorBack->Set (ctre::phoenix::motorcontrol::ControlMode::Follower, lMotorFrontNum);
 
             //used for inverting motors
             _rMotorFront->SetSensorPhase (true);
@@ -102,71 +102,88 @@ class Robot : public frc::IterativeRobot
             cubeAngleLimit->Reset ();
         }
 
-        void RobotPeriodic()
+        void RobotPeriodic ()
         {
-            if()
+            if (gameData == "")
+                frc::DriverStation::GetInstance ().GetGameSpecificMessage ();
         }
 
         void TeleopInit ()
         {
-            DriverStation::ReportError("TeleopInit Started");
+            DriverStation::ReportError ("TeleopInit Started");
             //Set encoder positions to 0
             _rMotorFront->GetSensorCollection ().SetQuadraturePosition (0, checkTimeout);
             _rMotorBack->GetSensorCollection ().SetQuadraturePosition (0, checkTimeout);
             _lMotorFront->GetSensorCollection ().SetQuadraturePosition (0, checkTimeout);
             _lMotorBack->GetSensorCollection ().SetQuadraturePosition (0, checkTimeout);
             myRobot->ArcadeDrive (0.0, 0.0);
-            DriverStation::ReportError("TeleopInit Completed");
+            DriverStation::ReportError ("TeleopInit Completed");
         }
 
         void TeleopPeriodic ()
         {
             myRobot->ArcadeDrive (scale * stick->GetRawAxis (1), -(stick->GetRawAxis (4) > 0 ? 1 : -1) * stick->GetRawAxis (4) * stick->GetRawAxis (4));
 
-            if(stick->GetRawAxis(3) > TRIGGER_DEADZONE)//right trigger
+            if (stick->GetRawAxis (3) > TRIGGER_DEADZONE) //right trigger
             {
-            	this->_lCubeIntake->Set(stick->GetRawAxis(3));
-            	this->_rCubeIntake->Set(stick->GetRawAxis(3));
+                this->_lCubeIntake->Set (stick->GetRawAxis (3));
+                this->_rCubeIntake->Set (stick->GetRawAxis (3));
             }
-            else if(stick->GetRawAxis(2) > TRIGGER_DEADZONE)//left trigger
+            else if (stick->GetRawAxis (2) > TRIGGER_DEADZONE) //left trigger
             {
-            	this->_lCubeIntake->Set(-stick->GetRawAxis(2));
-            	this->_rCubeIntake->Set(-stick->GetRawAxis(2));
+                this->_lCubeIntake->Set (-stick->GetRawAxis (2));
+                this->_rCubeIntake->Set (-stick->GetRawAxis (2));
             }
             else
             {
-             	this->_lCubeIntake->Set(0);
-                this->_rCubeIntake->Set(0);
+                this->_lCubeIntake->Set (0);
+                this->_rCubeIntake->Set (0);
             }
-            if(stick->GetRawButton(1)) // a button
+            if (stick->GetRawButton (1)) // a button
             {
-            	this->_cubeManipAngle->Set(1);
+                this->_cubeManipAngle->Set (1);
             }
-            else if(stick->GetRawButton(4)) // y button
+            else if (stick->GetRawButton (4)) // y button
             {
-            	this->_cubeManipAngle->Set(-1);
+                this->_cubeManipAngle->Set (-1);
 
             }
-            else{
-            	this->_cubeManipAngle->Set(0);
+            else
+            {
+                this->_cubeManipAngle->Set (0);
             }
         }
 
         void AutonomousInit ()
         {
-            DriverStation::ReportError("AutonInit Started");
+            DriverStation::ReportError ("AutonInit Started");
             ConfigPIDS ();
-            DriverStation::ReportError("AutonInit Completed");
+            DriverStation::ReportError ("AutonInit Completed");
         }
 
         void AutonomousPeriodic ()
         {
-        	myRobot->PIDDrive(TICKS_PER_INCH * 12);
+            //Raise angle motor until limit is triggered, and then set position to what it is when maxed
+            /*while (!cubeAngleLimit->Get ())
+             {
+             _cubeManipAngle->Set (0.1);
+             }
+             cubeAngleLimit->Reset ();
+             _cubeManipAngle->GetSensorCollection ().SetQuadraturePosition (MAX_ANGLE_TICKS, checkTimeout);
+             */
+            /*
+             * NOTE - RIGHT NOW THIS IS SUPPOSED TO HAPPEN SUPER SLOWLY
+             * THIS IS BECAUSE, AFTER THE LIMIT SWITCH IS INSTALLED, IT MAY NOT BE SET UP CORRECTLY
+             * SOMEONE SHOULD WATCH THE MANIPULATOR AND MAKE SURE THE SWITCH IS ACTUALLY TRIGGERED
+             * IF THE MANIPULATOR GOES PAST ITS PATH OF TRAVEL, E-STOP THE ROBOT
+             * AT COMPETITION, THIS SHOULD BE SET TO FULL SPEED
+             */
+            myRobot->PIDDrive (TICKS_PER_INCH * 12);
         }
 
         void TestInit ()
         {
-            DriverStation::ReportError("TestInit Started");
+            DriverStation::ReportError ("TestInit Started");
             ConfigPIDS ();
             //Put PID values in ShuffleBoard
             SmartDashboard::PutNumber ("P Drive", pConstantDrive);
@@ -180,7 +197,7 @@ class Robot : public frc::IterativeRobot
             SmartDashboard::PutNumber ("Current Position - Right", 0);
             SmartDashboard::PutNumber ("Current Position - Left", 0);
             SmartDashboard::PutNumber ("Current Position - Angle", MAX_ANGLE_TICKS);
-            DriverStation::ReportError("TestInit Completed");
+            DriverStation::ReportError ("TestInit Completed");
         }
 
         void TestPeriodic ()
@@ -226,7 +243,7 @@ class Robot : public frc::IterativeRobot
 
         void ConfigPIDS ()
         {
-            DriverStation::ReportError("PID Config Started");
+            DriverStation::ReportError ("PID Config Started");
             _rMotorFront->GetSensorCollection ().SetQuadraturePosition (0, checkTimeout);
             _rMotorBack->GetSensorCollection ().SetQuadraturePosition (0, checkTimeout);
             _lMotorFront->GetSensorCollection ().SetQuadraturePosition (0, checkTimeout);
@@ -248,232 +265,244 @@ class Robot : public frc::IterativeRobot
             _cubeManipAngle->Config_kI (0, iConstantAngle, checkTimeout);
             _cubeManipAngle->Config_kD (0, dConstantAngle, checkTimeout);
 
-            //Raise angle motor until limit is triggered, and then set position to what it is when maxed
-             /*while (!cubeAngleLimit->Get ())
-             {
-                 _cubeManipAngle->Set (0.1);
-             }
-             cubeAngleLimit->Reset ();
-             _cubeManipAngle->GetSensorCollection ().SetQuadraturePosition (MAX_ANGLE_TICKS, checkTimeout);
-            */
-            /*
-             * NOTE - RIGHT NOW THIS IS SUPPOSED TO HAPPEN SUPER SLOWLY
-             * THIS IS BECAUSE, AFTER THE LIMIT SWITCH IS INSTALLED, IT MAY NOT BE SET UP CORRECTLY
-             * SOMEONE SHOULD WATCH THE MANIPULATOR AND MAKE SURE THE SWITCH IS ACTUALLY TRIGGERED
-             * IF THE MANIPULATOR GOES PAST ITS PATH OF TRAVEL, E-STOP THE ROBOT
-             * AT COMPETITION, THIS SHOULD BE SET TO FULL SPEED
-             */
             setPointAngle = MAX_ANGLE_TICKS;
             setPointDrive = 0;
-            DriverStation::ReportError("PID Config Completed");
+            DriverStation::ReportError ("PID Config Completed");
         }
 
-    	void nothing(){
-    		myRobot->PIDDrive(TICKS_PER_INCH * 0.0);
+        void nothing ()
+        {
+            myRobot->PIDDrive (TICKS_PER_INCH * 0.0);
         }
-    	void Easy(){
-    		if(position == "Left"){
-    			myRobot->PIDDrive(TICKS_PER_INCH * 140);
-    		}
-    		if(position == "Right"){
-    			myRobot->PIDDrive(TICKS_PER_INCH * 140);
-    		}
-    		if(position == "Center"){
-    			if(gameData[0] == "R"){
-    				myRobot->PIDDrive(TICKS_PER_INCH * 48.5);
-    				myRobot->PIDTurn(90);
-    				myRobot->PIDDrive(TICKS_PER_INCH * 71.23);
-    				myRobot->PIDTurn(270);
-    				myRobot->PIDDrive(TICKS_PER_INCH * 73);
-    				//drop cube
-    				_lCubeIntake->Set(1.0);
-    		}
-    			if(gameData[0] == "L"){
-    				myRobot->PIDDrive(TICKS_PER_INCH * 48.5);
-    				myRobot->PIDTurn(270);
-    				myRobot->PIDDrive(TICKS_PER_INCH * 71.23);
-    				myRobot->PIDTurn(90);
-    				myRobot->PIDDrive(TICKS_PER_INCH * 73);
-    				//drop cube
-    			}
-    		}
-    	}
-    	void medium(){
-    		if(position == "Left"){
-    			if(gameData[0] == " l"){
-    				myRobot->PIDDrive(TICKS_PER_INCH * 149.5);
-    				myRobot->PIDTurn(90);
-    				myRobot->PIDDrive(TICKS_PER_INCH * 21.06);
-    				//drop cube
-    			}
-    			if(gameData[0] == "R"){
-    				myRobot->PIDDrive(TICKS_PER_INCH * 140);
-    			}
-    		}
-    		if(position == "Right"){
-    			if(gameData[0] == "L"){
-    				myRobot->PIDDrive(TICKS_PER_INCH * 140);
-    			}
-    			if(gameData[0] == "R"){
-    				myRobot->PIDDrive(TICKS_PER_INCH * 149.5);
-    				myRobot->PIDTurn(270);
-    				myRobot->PIDDrive(TICKS_PER_INCH * 21.06);
-    				//drop cube
-    			}
-    		}
-    		if(position == "Center"){
-    			if(gameData[0] == "R"){
-    				myRobot->PIDDrive(TICKS_PER_INCH * 48.5);
-    				myRobot->PIDTurn(90);
-    				myRobot->PIDDrive(TICKS_PER_INCH * 71.23);
-    				myRobot->PIDTurn(270);
-    				myRobot->PIDDrive(TICKS_PER_INCH * 73);
-    				//drop cube
-    				myRobot->PIDDrive(TICKS_PER_INCH * -73);
-    				myRobot->PIDTurn(90);
-    				myRobot->PIDDrive(TICKS_PER_INCH * 41.06);
-    				myRobot->PIDTurn(270);
-    				myRobot->PIDDrive(TICKS_PER_INCH * 93);
-    			}
-    			if(gameData[0] == "L"){
-    				myRobot->PIDDrive(TICKS_PER_INCH * 48.5);
-    				myRobot->PIDTurn(270);
-    				myRobot->PIDDrive(TICKS_PER_INCH * 71.23);
-    				myRobot->PIDTurn(90);
-    				myRobot->PIDDrive(TICKS_PER_INCH * 73);
-    				//drop cube
-    				myRobot->PIDDrive(TICKS_PER_INCH * -73);
-    				myRobot->PIDTurn(270);
-    				myRobot->PIDDrive(TICKS_PER_INCH * 41.06);
-    				myRobot->PIDTurn(90);
-    				myRobot->PIDDrive(TICKS_PER_INCH * 93);
-    			}
-    		}
-    	}
-    	void hard(){
-    		if(position == "Left"){
-    			if(gameData[0] == "L"){
-    				myRobot->PIDDrive(TICKS_PER_INCH * 149.5);
-    				myRobot->PIDTurn(90);
-    				myRobot->PIDDrive(TICKS_PER_INCH * 21.06);
-    				//drop cube
-    				myRobot->PIDDrive(TICKS_PER_INCH * -21.06)
-    				myRobot->PIDTurn(270);
-    				myRobot->PIDDrive(TICKS_PER_INCH * 67);
-    				myRobot->PIDTurn(90);
-    				myRobot->PIDDrive(TICKS_PER_INCH * 46.06);
-    				myRobot->PIDTurn(90);
-    				myRobot->PIDDrive(TICKS_PER_INCH * 7.5);
-    				//pick up cube
-    				myRobot->PIDDrive(TICKS_PER_INCH * -7.5);
-    				//manipukator move up
-    				myRobot->PIDDrive(TICKS_PER_INCH * 20.5);
-    			}
-    			if(gameData[0] == "R"){
-    				myRobot->PIDDrive(TICKS_PER_INCH * 48.5);
-    				myRobot->PIDTurn(90);
-    				myRobot->PIDDrive(TICKS_PER_INCH * 232.6);
-    				myRobot->PIDTurn(270);
-    				myRobot->PIDDrive(TICKS_PER_INCH * 101);
-    				myRobot->PIDTurn(270);
-    				myRobot->PIDDrive(TICKS_PER_INCH * 21.06);
-    				//drop box
-    				myRobot->PIDDrive(TICKS_PER_INCH * -21.06);
-    				myRobot->PIDTurn(90);
-    				myRobot->PIDDrive(TICKS_PER_INCH * 67);
-    				myRobot->PIDTurn(270);
-    				myRobot->PIDDrive(TICKS_PER_INCH * 46.06);
-    				myRobot->PIDTurn(270);
-    				myRobot->PIDDrive(TICKS_PER_INCH * 7.5);
-    				//manipulator up
-    				myRobot->PIDDrive(TICKS_PER_INCH * 20.5);
-    			}
-    		}
-    		if(position == "Center"){
-    			if(gameData[0] == "L"){
-    				myRobot->PIDDrive(TICKS_PER_INCH * 48.5);
-    				myRobot->PIDTurn(270);
-    				myRobot->PIDDrive(TICKS_PER_INCH * 120.31);
-    				myRobot->PIDTurn(90);
-    				myRobot->PIDDrive(TICKS_PER_INCH * 101);
-    				myRobot->PIDTurn(90);
-    				myRobot->PIDDrive(TICKS_PER_INCH * 21.06);
-    				//drop box
-    				myRobot->PIDDrive(TICKS_PER_INCH * -21.06);
-    				myRobot->PIDTurn(270);
-    				myRobot->PIDDrive(TICKS_PER_INCH * 67);
-    				myRobot->PIDTurn(90);
-    				myRobot->PIDDrive(TICKS_PER_INCH * 46.06);
-    				myRobot->PIDTurn(90);
-    				myRobot->PIDDrive(TICKS_PER_INCH * 7.5);
-    				//pick up box
-    				myRobot->PIDDrive(TICKS_PER_INCH * -7.5);
-    				//manipulator up
-    				myRobot->PIDDrive(TICKS_PER_INCH * 20.5);
-    			}
-    			if(gameData[0] == "R"){
-    				myRobot->PIDDrive(TICKS_PER_INCH * 48.5);
-    				myRobot->PIDTurn(90);
-    				myRobot->PIDDrive(TICKS_PER_INCH * 112.29);
-    				myRobot->PIDTurn(270);
-    				myRobot->PIDDrive(TICKS_PER_INCH * 101);
-    				myRobot->PIDTurn(270);
-    				myRobot->PIDDrive(TICKS_PER_INCH * 21.06);
-    				//drop box
-    				myRobot->PIDDrive(TICKS_PER_INCH * -21.06);
-    				myRobot->PIDTurn(90);
-    				myRobot->PIDDrive(TICKS_PER_INCH * 67);
-    				myRobot->PIDTurn(270);
-    				myRobot->PIDDrive(TICKS_PER_INCH * 46.06);
-    				myRobot->PIDTurn(270);
-    				myRobot->PIDDrive(TICKS_PER_INCH * 7.5);
-    				//pick up box
-    				myRobot->PIDDrive(TICKS_PER_INCH * -7.5);
-    				//manipulator up
-    				myRobot->PIDDrive(TICKS_PER_INCH * 20.5);
-    			}
-    		}
-    		if(position == "Right"){
-    			if(gameData[0] == "R"){
-    				myRobot->PIDDrive(TICKS_PER_INCH * 149.5);
-    				myRobot->PIDTurn(270);
-    				myRobot->PIDDrive(TICKS_PER_INCH * 21.06);
-    				//drop box
-    				myRobot->PIDDrive(TICKS_PER_INCH * -21.06);
-    				myRobot->PIDTurn(90);
-    				myRobot->PIDDrive(TICKS_PER_INCH * 67);
-    				myRobot->PIDTurn(270);
-    				myRobot->PIDDrive(TICKS_PER_INCH * 46.06);
-    				myRobot->PIDTurn(270);
-    				myRobot->PIDDrive(TICKS_PER_INCH * 7.5);
-    				//pick up box
-    				myRobot->PIDDrive(TICKS_PER_INCH * -7.5);
-    				//manipulator up
-    				myRobot->PIDDrive(TICKS_PER_INCH * 20.5);
-    			}
-    			if(gameData[0] == "L"){
-    				myRobot->PIDDrive(TICKS_PER_INCH * 48.5);
-    				myRobot->PIDTurn(270);
-    				myRobot->PIDDrive(TICKS_PER_INCH * 232.6);
-    				myRobot->PIDTurn(90);
-    				myRobot->PIDDrive(TICKS_PER_INCH * 101);
-    				myRobot->PIDTurn(90);
-    				myRobot->PIDDrive(TICKS_PER_INCH * 21.06);
-    				//drop box
-    				myRobot->PIDDrive(TICKS_PER_INCH * -21.06);
-    				myRobot->PIDTurn(270);
-    				myRobot->PIDDrive(TICKS_PER_INCH * 67);
-    				myRobot->PIDTurn(90);
-    				myRobot->PIDDrive(TICKS_PER_INCH * 46.06);
-    				myRobot->PIDTurn(90);
-    				myRobot->PIDDrive(TICKS_PER_INCH * 7.5);
-    				//pick up cube
-    				myRobot->PIDDrive(TICKS_PER_INCH * -7.5);
-    				//manipulator up
-    				myRobot->PIDDrive(TICKS_PER_INCH * 20.5);
-    			}
-    		}
-    	}
+        void Easy ()
+        {
+            if (position == "Left")
+            {
+                myRobot->PIDDrive (TICKS_PER_INCH * 140);
+            }
+            if (position == "Right")
+            {
+                myRobot->PIDDrive (TICKS_PER_INCH * 140);
+            }
+            if (position == "Center")
+            {
+                if (gameData[0] == "R")
+                {
+                    myRobot->PIDDrive (TICKS_PER_INCH * 48.5);
+                    myRobot->PIDTurn (90);
+                    myRobot->PIDDrive (TICKS_PER_INCH * 71.23);
+                    myRobot->PIDTurn (270);
+                    myRobot->PIDDrive (TICKS_PER_INCH * 73);
+                    //drop cube
+                    _lCubeIntake->Set (1.0);
+                }
+                if (gameData[0] == "L")
+                {
+                    myRobot->PIDDrive (TICKS_PER_INCH * 48.5);
+                    myRobot->PIDTurn (270);
+                    myRobot->PIDDrive (TICKS_PER_INCH * 71.23);
+                    myRobot->PIDTurn (90);
+                    myRobot->PIDDrive (TICKS_PER_INCH * 73);
+                    //drop cube
+                }
+            }
+        }
+        void medium ()
+        {
+            if (position == "Left")
+            {
+                if (gameData[0] == " l")
+                {
+                    myRobot->PIDDrive (TICKS_PER_INCH * 149.5);
+                    myRobot->PIDTurn (90);
+                    myRobot->PIDDrive (TICKS_PER_INCH * 21.06);
+                    //drop cube
+                }
+                if (gameData[0] == "R")
+                {
+                    myRobot->PIDDrive (TICKS_PER_INCH * 140);
+                }
+            }
+            if (position == "Right")
+            {
+                if (gameData[0] == "L")
+                {
+                    myRobot->PIDDrive (TICKS_PER_INCH * 140);
+                }
+                if (gameData[0] == "R")
+                {
+                    myRobot->PIDDrive (TICKS_PER_INCH * 149.5);
+                    myRobot->PIDTurn (270);
+                    myRobot->PIDDrive (TICKS_PER_INCH * 21.06);
+                    //drop cube
+                }
+            }
+            if (position == "Center")
+            {
+                if (gameData[0] == "R")
+                {
+                    myRobot->PIDDrive (TICKS_PER_INCH * 48.5);
+                    myRobot->PIDTurn (90);
+                    myRobot->PIDDrive (TICKS_PER_INCH * 71.23);
+                    myRobot->PIDTurn (270);
+                    myRobot->PIDDrive (TICKS_PER_INCH * 73);
+                    //drop cube
+                    myRobot->PIDDrive (TICKS_PER_INCH * -73);
+                    myRobot->PIDTurn (90);
+                    myRobot->PIDDrive (TICKS_PER_INCH * 41.06);
+                    myRobot->PIDTurn (270);
+                    myRobot->PIDDrive (TICKS_PER_INCH * 93);
+                }
+                if (gameData[0] == "L")
+                {
+                    myRobot->PIDDrive (TICKS_PER_INCH * 48.5);
+                    myRobot->PIDTurn (270);
+                    myRobot->PIDDrive (TICKS_PER_INCH * 71.23);
+                    myRobot->PIDTurn (90);
+                    myRobot->PIDDrive (TICKS_PER_INCH * 73);
+                    //drop cube
+                    myRobot->PIDDrive (TICKS_PER_INCH * -73);
+                    myRobot->PIDTurn (270);
+                    myRobot->PIDDrive (TICKS_PER_INCH * 41.06);
+                    myRobot->PIDTurn (90);
+                    myRobot->PIDDrive (TICKS_PER_INCH * 93);
+                }
+            }
+        }
+        void hard ()
+        {
+            if (position == "Left")
+            {
+                if (gameData[0] == "L")
+                {
+                    myRobot->PIDDrive (TICKS_PER_INCH * 149.5);
+                    myRobot->PIDTurn (90);
+                    myRobot->PIDDrive (TICKS_PER_INCH * 21.06);
+                    //drop cube
+                    myRobot->PIDDrive (TICKS_PER_INCH * -21.06);
+                    myRobot->PIDTurn (270);
+                    myRobot->PIDDrive (TICKS_PER_INCH * 67);
+                    myRobot->PIDTurn (90);
+                    myRobot->PIDDrive (TICKS_PER_INCH * 46.06);
+                    myRobot->PIDTurn (90);
+                    myRobot->PIDDrive (TICKS_PER_INCH * 7.5);
+                    //pick up cube
+                    myRobot->PIDDrive (TICKS_PER_INCH * -7.5);
+                    //manipukator move up
+                    myRobot->PIDDrive (TICKS_PER_INCH * 20.5);
+                }
+                if (gameData[0] == "R")
+                {
+                    myRobot->PIDDrive (TICKS_PER_INCH * 48.5);
+                    myRobot->PIDTurn (90);
+                    myRobot->PIDDrive (TICKS_PER_INCH * 232.6);
+                    myRobot->PIDTurn (270);
+                    myRobot->PIDDrive (TICKS_PER_INCH * 101);
+                    myRobot->PIDTurn (270);
+                    myRobot->PIDDrive (TICKS_PER_INCH * 21.06);
+                    //drop box
+                    myRobot->PIDDrive (TICKS_PER_INCH * -21.06);
+                    myRobot->PIDTurn (90);
+                    myRobot->PIDDrive (TICKS_PER_INCH * 67);
+                    myRobot->PIDTurn (270);
+                    myRobot->PIDDrive (TICKS_PER_INCH * 46.06);
+                    myRobot->PIDTurn (270);
+                    myRobot->PIDDrive (TICKS_PER_INCH * 7.5);
+                    //manipulator up
+                    myRobot->PIDDrive (TICKS_PER_INCH * 20.5);
+                }
+            }
+            if (position == "Center")
+            {
+                if (gameData[0] == "L")
+                {
+                    myRobot->PIDDrive (TICKS_PER_INCH * 48.5);
+                    myRobot->PIDTurn (270);
+                    myRobot->PIDDrive (TICKS_PER_INCH * 120.31);
+                    myRobot->PIDTurn (90);
+                    myRobot->PIDDrive (TICKS_PER_INCH * 101);
+                    myRobot->PIDTurn (90);
+                    myRobot->PIDDrive (TICKS_PER_INCH * 21.06);
+                    //drop box
+                    myRobot->PIDDrive (TICKS_PER_INCH * -21.06);
+                    myRobot->PIDTurn (270);
+                    myRobot->PIDDrive (TICKS_PER_INCH * 67);
+                    myRobot->PIDTurn (90);
+                    myRobot->PIDDrive (TICKS_PER_INCH * 46.06);
+                    myRobot->PIDTurn (90);
+                    myRobot->PIDDrive (TICKS_PER_INCH * 7.5);
+                    //pick up box
+                    myRobot->PIDDrive (TICKS_PER_INCH * -7.5);
+                    //manipulator up
+                    myRobot->PIDDrive (TICKS_PER_INCH * 20.5);
+                }
+                if (gameData[0] == "R")
+                {
+                    myRobot->PIDDrive (TICKS_PER_INCH * 48.5);
+                    myRobot->PIDTurn (90);
+                    myRobot->PIDDrive (TICKS_PER_INCH * 112.29);
+                    myRobot->PIDTurn (270);
+                    myRobot->PIDDrive (TICKS_PER_INCH * 101);
+                    myRobot->PIDTurn (270);
+                    myRobot->PIDDrive (TICKS_PER_INCH * 21.06);
+                    //drop box
+                    myRobot->PIDDrive (TICKS_PER_INCH * -21.06);
+                    myRobot->PIDTurn (90);
+                    myRobot->PIDDrive (TICKS_PER_INCH * 67);
+                    myRobot->PIDTurn (270);
+                    myRobot->PIDDrive (TICKS_PER_INCH * 46.06);
+                    myRobot->PIDTurn (270);
+                    myRobot->PIDDrive (TICKS_PER_INCH * 7.5);
+                    //pick up box
+                    myRobot->PIDDrive (TICKS_PER_INCH * -7.5);
+                    //manipulator up
+                    myRobot->PIDDrive (TICKS_PER_INCH * 20.5);
+                }
+            }
+            if (position == "Right")
+            {
+                if (gameData[0] == "R")
+                {
+                    myRobot->PIDDrive (TICKS_PER_INCH * 149.5);
+                    myRobot->PIDTurn (270);
+                    myRobot->PIDDrive (TICKS_PER_INCH * 21.06);
+                    //drop box
+                    myRobot->PIDDrive (TICKS_PER_INCH * -21.06);
+                    myRobot->PIDTurn (90);
+                    myRobot->PIDDrive (TICKS_PER_INCH * 67);
+                    myRobot->PIDTurn (270);
+                    myRobot->PIDDrive (TICKS_PER_INCH * 46.06);
+                    myRobot->PIDTurn (270);
+                    myRobot->PIDDrive (TICKS_PER_INCH * 7.5);
+                    //pick up box
+                    myRobot->PIDDrive (TICKS_PER_INCH * -7.5);
+                    //manipulator up
+                    myRobot->PIDDrive (TICKS_PER_INCH * 20.5);
+                }
+                if (gameData[0] == "L")
+                {
+                    myRobot->PIDDrive (TICKS_PER_INCH * 48.5);
+                    myRobot->PIDTurn (270);
+                    myRobot->PIDDrive (TICKS_PER_INCH * 232.6);
+                    myRobot->PIDTurn (90);
+                    myRobot->PIDDrive (TICKS_PER_INCH * 101);
+                    myRobot->PIDTurn (90);
+                    myRobot->PIDDrive (TICKS_PER_INCH * 21.06);
+                    //drop box
+                    myRobot->PIDDrive (TICKS_PER_INCH * -21.06);
+                    myRobot->PIDTurn (270);
+                    myRobot->PIDDrive (TICKS_PER_INCH * 67);
+                    myRobot->PIDTurn (90);
+                    myRobot->PIDDrive (TICKS_PER_INCH * 46.06);
+                    myRobot->PIDTurn (90);
+                    myRobot->PIDDrive (TICKS_PER_INCH * 7.5);
+                    //pick up cube
+                    myRobot->PIDDrive (TICKS_PER_INCH * -7.5);
+                    //manipulator up
+                    myRobot->PIDDrive (TICKS_PER_INCH * 20.5);
+                }
+            }
+        }
 };
 
 START_ROBOT_CLASS(Robot)
