@@ -54,12 +54,8 @@ class Robot : public frc::IterativeRobot
         int timeOut = 100;
         int packetsReceived = 0;
         //booleans for what position you start in
-        bool left = false;
-        bool right = false;
-        bool center = false;
-
-        std::string gameData;
-        std::string SwitchColor = gameData.substr(1,1);
+        std::string position = "";
+        std::string gameData = "";
 
     private:
         //Initialize variables
@@ -104,6 +100,11 @@ class Robot : public frc::IterativeRobot
             _cubeManipAngle->SelectProfileSlot (0, 0);
 
             cubeAngleLimit->Reset ();
+        }
+
+        void RobotPeriodic()
+        {
+            if()
         }
 
         void TeleopInit ()
@@ -160,7 +161,7 @@ class Robot : public frc::IterativeRobot
 
         void AutonomousPeriodic ()
         {
-        	move(12);
+        	myRobot->PIDDrive(TICKS_PER_INCH * 12);
         }
 
         void TestInit ()
@@ -266,216 +267,210 @@ class Robot : public frc::IterativeRobot
             setPointDrive = 0;
             DriverStation::ReportError("PID Config Completed");
         }
-        void move(double inches){
-        	double NumOfTicks = inches * TICKS_PER_INCH;
-        	_lMotorFront->WPI_TalonSRX::Set(ctre::phoenix::motorcontrol::ControlMode::MotionProfile, NumOfTicks);
-        	_rMotorFront->WPI_TalonSRX::Set(ctre::phoenix::motorcontrol::ControlMode::MotionProfile, NumOfTicks);
-        	_lMotorBack->WPI_TalonSRX::Set(ctre::phoenix::motorcontrol::ControlMode::Follower, rMotorFrontNum);
-        	_rMotorBack->WPI_TalonSRX::Set(ctre::phoenix::motorcontrol::ControlMode::Follower, lMotorFrontNum);
-        }
+
     	void nothing(){
-    		move(0.0);
+    		myRobot->PIDDrive(TICKS_PER_INCH * 0.0);
         }
     	void Easy(){
-    		if(left){
-    			move(140);
+    		if(position == "Left"){
+    			myRobot->PIDDrive(TICKS_PER_INCH * 140);
     		}
-    		if(right){
-    			move(140);
+    		if(position == "Right"){
+    			myRobot->PIDDrive(TICKS_PER_INCH * 140);
     		}
-    		if(center){
-    			if(SwitchColor == "r"){
-    				move(48.5);
+    		if(position == "Center"){
+    			if(gameData[0] == "R"){
+    				myRobot->PIDDrive(TICKS_PER_INCH * 48.5);
     				myRobot->PIDTurn(90);
-    				move(71.23);
+    				myRobot->PIDDrive(TICKS_PER_INCH * 71.23);
     				myRobot->PIDTurn(270);
-    				move(73);
+    				myRobot->PIDDrive(TICKS_PER_INCH * 73);
     				//drop cube
     				_lCubeIntake->Set(1.0);
     		}
-    			if(SwitchColor == "l"){
-    				move(48.5);
+    			if(gameData[0] == "L"){
+    				myRobot->PIDDrive(TICKS_PER_INCH * 48.5);
     				myRobot->PIDTurn(270);
-    				move(71.23);
+    				myRobot->PIDDrive(TICKS_PER_INCH * 71.23);
     				myRobot->PIDTurn(90);
-    				move(73);
+    				myRobot->PIDDrive(TICKS_PER_INCH * 73);
     				//drop cube
     			}
     		}
     	}
     	void medium(){
-    		if(left){
-    			if(SwitchColor == " l"){
-    				move(149.5);
+    		if(position == "Left"){
+    			if(gameData[0] == " l"){
+    				myRobot->PIDDrive(TICKS_PER_INCH * 149.5);
     				myRobot->PIDTurn(90);
-    				move(21.06);
+    				myRobot->PIDDrive(TICKS_PER_INCH * 21.06);
     				//drop cube
     			}
-    			if(SwitchColor == "r"){
-    				move(140);
+    			if(gameData[0] == "R"){
+    				myRobot->PIDDrive(TICKS_PER_INCH * 140);
     			}
     		}
-    		if(right){
-    			if(SwitchColor == "l"){
-    				move(140);
+    		if(position == "Right"){
+    			if(gameData[0] == "L"){
+    				myRobot->PIDDrive(TICKS_PER_INCH * 140);
     			}
-    			if(SwitchColor == "r"){
-    				move(149.5);
+    			if(gameData[0] == "R"){
+    				myRobot->PIDDrive(TICKS_PER_INCH * 149.5);
     				myRobot->PIDTurn(270);
-    				move(21.06);
+    				myRobot->PIDDrive(TICKS_PER_INCH * 21.06);
     				//drop cube
     			}
     		}
-    		if(center){
-    			if(SwitchColor == "r"){
-    				move(48.5);
+    		if(position == "Center"){
+    			if(gameData[0] == "R"){
+    				myRobot->PIDDrive(TICKS_PER_INCH * 48.5);
     				myRobot->PIDTurn(90);
-    				move(71.23);
+    				myRobot->PIDDrive(TICKS_PER_INCH * 71.23);
     				myRobot->PIDTurn(270);
-    				move(73);
+    				myRobot->PIDDrive(TICKS_PER_INCH * 73);
     				//drop cube
-    				move(-73);
+    				myRobot->PIDDrive(TICKS_PER_INCH * -73);
     				myRobot->PIDTurn(90);
-    				move(41.06);
+    				myRobot->PIDDrive(TICKS_PER_INCH * 41.06);
     				myRobot->PIDTurn(270);
-    				move(93);
+    				myRobot->PIDDrive(TICKS_PER_INCH * 93);
     			}
-    			if(SwitchColor == "l"){
-    				move(48.5);
+    			if(gameData[0] == "L"){
+    				myRobot->PIDDrive(TICKS_PER_INCH * 48.5);
     				myRobot->PIDTurn(270);
-    				move(71.23);
+    				myRobot->PIDDrive(TICKS_PER_INCH * 71.23);
     				myRobot->PIDTurn(90);
-    				move(73);
+    				myRobot->PIDDrive(TICKS_PER_INCH * 73);
     				//drop cube
-    				move(-73);
+    				myRobot->PIDDrive(TICKS_PER_INCH * -73);
     				myRobot->PIDTurn(270);
-    				move(41.06);
+    				myRobot->PIDDrive(TICKS_PER_INCH * 41.06);
     				myRobot->PIDTurn(90);
-    				move(93);
+    				myRobot->PIDDrive(TICKS_PER_INCH * 93);
     			}
     		}
     	}
     	void hard(){
-    		if(left){
-    			if(SwitchColor == "l"){
-    				move(149.5);
+    		if(position == "Left"){
+    			if(gameData[0] == "L"){
+    				myRobot->PIDDrive(TICKS_PER_INCH * 149.5);
     				myRobot->PIDTurn(90);
-    				move(21.06);
+    				myRobot->PIDDrive(TICKS_PER_INCH * 21.06);
     				//drop cube
-    				move(-21.06)
+    				myRobot->PIDDrive(TICKS_PER_INCH * -21.06)
     				myRobot->PIDTurn(270);
-    				move(67);
+    				myRobot->PIDDrive(TICKS_PER_INCH * 67);
     				myRobot->PIDTurn(90);
-    				move(46.06);
+    				myRobot->PIDDrive(TICKS_PER_INCH * 46.06);
     				myRobot->PIDTurn(90);
-    				move(7.5);
+    				myRobot->PIDDrive(TICKS_PER_INCH * 7.5);
     				//pick up cube
-    				move(-7.5);
+    				myRobot->PIDDrive(TICKS_PER_INCH * -7.5);
     				//manipukator move up
-    				move(20.5);
+    				myRobot->PIDDrive(TICKS_PER_INCH * 20.5);
     			}
-    			if(SwitchColor == "r"){
-    				move(48.5);
+    			if(gameData[0] == "R"){
+    				myRobot->PIDDrive(TICKS_PER_INCH * 48.5);
     				myRobot->PIDTurn(90);
-    				move(232.6);
+    				myRobot->PIDDrive(TICKS_PER_INCH * 232.6);
     				myRobot->PIDTurn(270);
-    				move(101);
+    				myRobot->PIDDrive(TICKS_PER_INCH * 101);
     				myRobot->PIDTurn(270);
-    				move(21.06);
+    				myRobot->PIDDrive(TICKS_PER_INCH * 21.06);
     				//drop box
-    				move(-21.06);
+    				myRobot->PIDDrive(TICKS_PER_INCH * -21.06);
     				myRobot->PIDTurn(90);
-    				move(67);
+    				myRobot->PIDDrive(TICKS_PER_INCH * 67);
     				myRobot->PIDTurn(270);
-    				move(46.06);
+    				myRobot->PIDDrive(TICKS_PER_INCH * 46.06);
     				myRobot->PIDTurn(270);
-    				move(7.5);
+    				myRobot->PIDDrive(TICKS_PER_INCH * 7.5);
     				//manipulator up
-    				move(20.5);
+    				myRobot->PIDDrive(TICKS_PER_INCH * 20.5);
     			}
     		}
-    		if(center){
-    			if(SwitchColor == "l"){
-    				move(48.5);
+    		if(position == "Center"){
+    			if(gameData[0] == "L"){
+    				myRobot->PIDDrive(TICKS_PER_INCH * 48.5);
     				myRobot->PIDTurn(270);
-    				move(120.31);
+    				myRobot->PIDDrive(TICKS_PER_INCH * 120.31);
     				myRobot->PIDTurn(90);
-    				move(101);
+    				myRobot->PIDDrive(TICKS_PER_INCH * 101);
     				myRobot->PIDTurn(90);
-    				move(21.06);
+    				myRobot->PIDDrive(TICKS_PER_INCH * 21.06);
     				//drop box
-    				move(-21.06);
+    				myRobot->PIDDrive(TICKS_PER_INCH * -21.06);
     				myRobot->PIDTurn(270);
-    				move(67);
+    				myRobot->PIDDrive(TICKS_PER_INCH * 67);
     				myRobot->PIDTurn(90);
-    				move(46.06);
+    				myRobot->PIDDrive(TICKS_PER_INCH * 46.06);
     				myRobot->PIDTurn(90);
-    				move(7.5);
+    				myRobot->PIDDrive(TICKS_PER_INCH * 7.5);
     				//pick up box
-    				move(-7.5);
+    				myRobot->PIDDrive(TICKS_PER_INCH * -7.5);
     				//manipulator up
-    				move(20.5);
+    				myRobot->PIDDrive(TICKS_PER_INCH * 20.5);
     			}
-    			if(SwitchColor == "r"){
-    				move(48.5);
+    			if(gameData[0] == "R"){
+    				myRobot->PIDDrive(TICKS_PER_INCH * 48.5);
     				myRobot->PIDTurn(90);
-    				move(112.29);
+    				myRobot->PIDDrive(TICKS_PER_INCH * 112.29);
     				myRobot->PIDTurn(270);
-    				move(101);
+    				myRobot->PIDDrive(TICKS_PER_INCH * 101);
     				myRobot->PIDTurn(270);
-    				move(21.06);
+    				myRobot->PIDDrive(TICKS_PER_INCH * 21.06);
     				//drop box
-    				move(-21.06);
+    				myRobot->PIDDrive(TICKS_PER_INCH * -21.06);
     				myRobot->PIDTurn(90);
-    				move(67);
+    				myRobot->PIDDrive(TICKS_PER_INCH * 67);
     				myRobot->PIDTurn(270);
-    				move(46.06);
+    				myRobot->PIDDrive(TICKS_PER_INCH * 46.06);
     				myRobot->PIDTurn(270);
-    				move(7.5);
+    				myRobot->PIDDrive(TICKS_PER_INCH * 7.5);
     				//pick up box
-    				move(-7.5);
+    				myRobot->PIDDrive(TICKS_PER_INCH * -7.5);
     				//manipulator up
-    				move(20.5);
+    				myRobot->PIDDrive(TICKS_PER_INCH * 20.5);
     			}
     		}
-    		if(right){
-    			if(SwitchColor == "r"){
-    				move(149.5);
+    		if(position == "Right"){
+    			if(gameData[0] == "R"){
+    				myRobot->PIDDrive(TICKS_PER_INCH * 149.5);
     				myRobot->PIDTurn(270);
-    				move(21.06);
+    				myRobot->PIDDrive(TICKS_PER_INCH * 21.06);
     				//drop box
-    				move(-21.06);
+    				myRobot->PIDDrive(TICKS_PER_INCH * -21.06);
     				myRobot->PIDTurn(90);
-    				move(67);
+    				myRobot->PIDDrive(TICKS_PER_INCH * 67);
     				myRobot->PIDTurn(270);
-    				move(46.06);
+    				myRobot->PIDDrive(TICKS_PER_INCH * 46.06);
     				myRobot->PIDTurn(270);
-    				move(7.5);
+    				myRobot->PIDDrive(TICKS_PER_INCH * 7.5);
     				//pick up box
-    				move(-7.5);
+    				myRobot->PIDDrive(TICKS_PER_INCH * -7.5);
     				//manipulator up
-    				move(20.5);
+    				myRobot->PIDDrive(TICKS_PER_INCH * 20.5);
     			}
-    			if(SwitchColor == "l"){
-    				move(48.5);
+    			if(gameData[0] == "L"){
+    				myRobot->PIDDrive(TICKS_PER_INCH * 48.5);
     				myRobot->PIDTurn(270);
-    				move(232.6);
+    				myRobot->PIDDrive(TICKS_PER_INCH * 232.6);
     				myRobot->PIDTurn(90);
-    				move(101);
+    				myRobot->PIDDrive(TICKS_PER_INCH * 101);
     				myRobot->PIDTurn(90);
-    				move(21.06);
+    				myRobot->PIDDrive(TICKS_PER_INCH * 21.06);
     				//drop box
-    				move(-21.06);
+    				myRobot->PIDDrive(TICKS_PER_INCH * -21.06);
     				myRobot->PIDTurn(270);
-    				move(67);
+    				myRobot->PIDDrive(TICKS_PER_INCH * 67);
     				myRobot->PIDTurn(90);
-    				move(46.06);
+    				myRobot->PIDDrive(TICKS_PER_INCH * 46.06);
     				myRobot->PIDTurn(90);
-    				move(7.5);
+    				myRobot->PIDDrive(TICKS_PER_INCH * 7.5);
     				//pick up cube
-    				move(-7.5);
+    				myRobot->PIDDrive(TICKS_PER_INCH * -7.5);
     				//manipulator up
-    				move(20.5);
+    				myRobot->PIDDrive(TICKS_PER_INCH * 20.5);
     			}
     		}
     	}
