@@ -39,7 +39,7 @@ class Robot : public frc::IterativeRobot
         const int cubeManipAngleLimitNum = 1;
         //Motor tuning constants
         double scale = 1;
-        const double TICKS_PER_INCH = 325.95;
+        const double TICKS_PER_INCH = 217.3;
         double pConstantDrive = .1;
         double iConstantDrive = 0.001;
         double dConstantDrive = 0;
@@ -257,6 +257,9 @@ class Robot : public frc::IterativeRobot
             setPointAngle = MAX_ANGLE_TICKS;
             setPointDrive = 0;
             DriverStation::ReportError("PID Config Completed");
+        }
+    	void nothing(){
+        	_lMotorFront->WPI_TalonSRX::Set(ctre::phoenix::motorcontrol::ControlMode::MotionProfile, 0);
         }
 };
 
