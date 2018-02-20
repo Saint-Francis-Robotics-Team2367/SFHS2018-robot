@@ -328,7 +328,154 @@ class Robot : public frc::IterativeRobot
     		}
     		if(center){
     			if(SwitchColor == "r"){
-
+    				move(48.5);
+    				myRobot->PIDTurn(90);
+    				move(71.23);
+    				myRobot->PIDTurn(270);
+    				move(73);
+    				//drop cube
+    				move(-73);
+    				myRobot->PIDTurn(90);
+    				move(41.06);
+    				myRobot->PIDTurn(270);
+    				move(93);
+    			}
+    			if(SwitchColor == "l"){
+    				move(48.5);
+    				myRobot->PIDTurn(270);
+    				move(71.23);
+    				myRobot->PIDTurn(90);
+    				move(73);
+    				//drop cube
+    				move(-73);
+    				myRobot->PIDTurn(270);
+    				move(41.06);
+    				myRobot->PIDTurn(90);
+    				move(93);
+    			}
+    		}
+    	}
+    	void hard(){
+    		if(left){
+    			if(SwitchColor == "l"){
+    				move(149.5);
+    				myRobot->PIDTurn(90);
+    				move(21.06);
+    				//drop cube
+    				move(-21.06)
+    				myRobot->PIDTurn(270);
+    				move(67);
+    				myRobot->PIDTurn(90);
+    				move(46.06);
+    				myRobot->PIDTurn(90);
+    				move(7.5);
+    				//pick up cube
+    				move(-7.5);
+    				//manipukator move up
+    				move(20.5);
+    			}
+    			if(SwitchColor == "r"){
+    				move(48.5);
+    				myRobot->PIDTurn(90);
+    				move(232.6);
+    				myRobot->PIDTurn(270);
+    				move(101);
+    				myRobot->PIDTurn(270);
+    				move(21.06);
+    				//drop box
+    				move(-21.06);
+    				myRobot->PIDTurn(90);
+    				move(67);
+    				myRobot->PIDTurn(270);
+    				move(46.06);
+    				myRobot->PIDTurn(270);
+    				move(7.5);
+    				//manipulator up
+    				move(20.5);
+    			}
+    		}
+    		if(center){
+    			if(SwitchColor == "l"){
+    				move(48.5);
+    				myRobot->PIDTurn(270);
+    				move(120.31);
+    				myRobot->PIDTurn(90);
+    				move(101);
+    				myRobot->PIDTurn(90);
+    				move(21.06);
+    				//drop box
+    				move(-21.06);
+    				myRobot->PIDTurn(270);
+    				move(67);
+    				myRobot->PIDTurn(90);
+    				move(46.06);
+    				myRobot->PIDTurn(90);
+    				move(7.5);
+    				//pick up box
+    				move(-7.5);
+    				//manipulator up
+    				move(20.5);
+    			}
+    			if(SwitchColor == "r"){
+    				move(48.5);
+    				myRobot->PIDTurn(90);
+    				move(112.29);
+    				myRobot->PIDTurn(270);
+    				move(101);
+    				myRobot->PIDTurn(270);
+    				move(21.06);
+    				//drop box
+    				move(-21.06);
+    				myRobot->PIDTurn(90);
+    				move(67);
+    				myRobot->PIDTurn(270);
+    				move(46.06);
+    				myRobot->PIDTurn(270);
+    				move(7.5);
+    				//pick up box
+    				move(-7.5);
+    				//manipulator up
+    				move(20.5);
+    			}
+    		}
+    		if(right){
+    			if(SwitchColor == "r"){
+    				move(149.5);
+    				myRobot->PIDTurn(270);
+    				move(21.06);
+    				//drop box
+    				move(-21.06);
+    				myRobot->PIDTurn(90);
+    				move(67);
+    				myRobot->PIDTurn(270);
+    				move(46.06);
+    				myRobot->PIDTurn(270);
+    				move(7.5);
+    				//pick up box
+    				move(-7.5);
+    				//manipulator up
+    				move(20.5);
+    			}
+    			if(SwitchColor == "l"){
+    				move(48.5);
+    				myRobot->PIDTurn(270);
+    				move(232.6);
+    				myRobot->PIDTurn(90);
+    				move(101);
+    				myRobot->PIDTurn(90);
+    				move(21.06);
+    				//drop box
+    				move(-21.06);
+    				myRobot->PIDTurn(270);
+    				move(67);
+    				myRobot->PIDTurn(90);
+    				move(46.06);
+    				myRobot->PIDTurn(90);
+    				move(7.5);
+    				//pick up cube
+    				move(-7.5);
+    				//manipulator up
+    				move(20.5);
     			}
     		}
     	}
