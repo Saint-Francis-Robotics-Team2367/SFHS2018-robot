@@ -43,6 +43,7 @@ class Robot : public frc::IterativeRobot
         double pConstantDrive = .1;
         double iConstantDrive = 0.001;
         double dConstantDrive = 0;
+        double fConstantDrive = 0; //check pg54 on TalonSRX Software Manual
         const double MAX_ANGLE_TICKS = 1000;
         double pConstantAngle = .1;
         double iConstantAngle = 0.001;
@@ -258,18 +259,27 @@ class Robot : public frc::IterativeRobot
             _lMotorFront->Config_kP (0, pConstantDrive, checkTimeout);
             _lMotorFront->Config_kI (0, iConstantDrive, checkTimeout);
             _lMotorFront->Config_kD (0, dConstantDrive, checkTimeout);
+            _lMotorFront->Config_kF (0, fConstantDrive, checkTimeout);
+
             _lMotorBack->Config_kP (0, pConstantDrive, checkTimeout);
             _lMotorBack->Config_kI (0, iConstantDrive, checkTimeout);
             _lMotorBack->Config_kD (0, dConstantDrive, checkTimeout);
+            _lMotorBack->Config_kF (0, fConstantDrive, checkTimeout);
+
             _rMotorFront->Config_kP (0, pConstantDrive, checkTimeout);
             _rMotorFront->Config_kI (0, iConstantDrive, checkTimeout);
             _rMotorFront->Config_kD (0, dConstantDrive, checkTimeout);
+            _rMotorFront->Config_kF (0, fConstantDrive, checkTimeout);
+
             _rMotorBack->Config_kP (0, pConstantDrive, checkTimeout);
             _rMotorBack->Config_kI (0, iConstantDrive, checkTimeout);
             _rMotorBack->Config_kD (0, dConstantDrive, checkTimeout);
+            _rMotorBack->Config_kF (0, fConstantDrive, checkTimeout);
+
             _cubeManipAngle->Config_kP (0, pConstantAngle, checkTimeout);
             _cubeManipAngle->Config_kI (0, iConstantAngle, checkTimeout);
             _cubeManipAngle->Config_kD (0, dConstantAngle, checkTimeout);
+            _cubeManipAngle->Config_kF (0, fConstantDrive, checkTimeout);
 
             setPointAngle = MAX_ANGLE_TICKS;
             setPointDrive = 0;
