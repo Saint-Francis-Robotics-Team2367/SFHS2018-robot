@@ -41,10 +41,9 @@ void SFDrive::ArcadeDrive(double xSpeed, double zRotation) {
 	m_rightMotor->Set(-rightMotorOutput);
 }
 
-void SFDrive::PIDDrive(double _lMotorSet, double _rMotorSet)
+void SFDrive::PIDDrive(double _ticks)
 {
-    m_leftMotor->WPI_TalonSRX::Set(ctre::phoenix::motorcontrol::ControlMode::MotionProfile, _lMotorSet);
-    m_rightMotor->WPI_TalonSRX::Set(ctre::phoenix::motorcontrol::ControlMode::MotionProfile, _rMotorSet);
+
     /*
     double currentRightSetpoint = m_rightMotor->GetSensorCollection().GetQuadraturePosition();
     double currentLeftSetpoint =  m_leftMotor->GetSensorCollection().GetQuadraturePosition();

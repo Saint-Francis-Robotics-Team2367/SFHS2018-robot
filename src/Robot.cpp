@@ -109,7 +109,7 @@ class Robot : public frc::IterativeRobot
         void RobotPeriodic ()
         {
             if (gameData == "")
-                frc::DriverStation::GetInstance ().GetGameSpecificMessage ();
+                gameData = frc::DriverStation::GetInstance ().GetGameSpecificMessage ().substr(0, 1);
             if(lastPacket + .5 < Timer().GetFPGATimestamp())
             {
                 position = SmartDashboard::GetString("Starting Position (Left, Right, Center)", position);
@@ -256,6 +256,11 @@ class Robot : public frc::IterativeRobot
             _lMotorFront->GetSensorCollection ().SetQuadraturePosition (0, checkTimeout);
             _lMotorBack->GetSensorCollection ().SetQuadraturePosition (0, checkTimeout);
 
+            _lMotorFront->WPI_TalonSRX::Set(ctre::phoenix::motorcontrol::ControlMode::MotionProfile, 1);
+            _rMotorFront->WPI_TalonSRX::Set(ctre::phoenix::motorcontrol::ControlMode::MotionProfile, 1);
+            _lMotorBack->WPI_TalonSRX::Set(ctre::phoenix::motorcontrol::ControlMode::MotionProfile, 1);
+            _rMotorBack->WPI_TalonSRX::Set(ctre::phoenix::motorcontrol::ControlMode::MotionProfile, 1);
+
             _lMotorFront->Config_kP (0, pConstantDrive, checkTimeout);
             _lMotorFront->Config_kI (0, iConstantDrive, checkTimeout);
             _lMotorFront->Config_kD (0, dConstantDrive, checkTimeout);
@@ -302,7 +307,7 @@ class Robot : public frc::IterativeRobot
             }
             if (position == "Center")
             {
-                if (gameData[0] == "R")
+                if (gameData == "R")
                 {
                     myRobot->PIDDrive (TICKS_PER_INCH * 48.5);
                     myRobot->PIDTurn (90);
@@ -312,7 +317,7 @@ class Robot : public frc::IterativeRobot
                     //drop cube
                     _lCubeIntake->Set (1.0);
                 }
-                if (gameData[0] == "L")
+                if (gameData == "L")
                 {
                     myRobot->PIDDrive (TICKS_PER_INCH * 48.5);
                     myRobot->PIDTurn (-90);
@@ -327,25 +332,25 @@ class Robot : public frc::IterativeRobot
         {
             if (position == "Left")
             {
-                if (gameData[0] == " l")
+                if (gameData == "L")
                 {
                     myRobot->PIDDrive (TICKS_PER_INCH * 149.5);
                     myRobot->PIDTurn (90);
                     myRobot->PIDDrive (TICKS_PER_INCH * 21.06);
                     //drop cube
                 }
-                if (gameData[0] == "R")
+                if (gameData == "R")
                 {
                     myRobot->PIDDrive (TICKS_PER_INCH * 140);
                 }
             }
             if (position == "Right")
             {
-                if (gameData[0] == "L")
+                if (gameData == "L")
                 {
                     myRobot->PIDDrive (TICKS_PER_INCH * 140);
                 }
-                if (gameData[0] == "R")
+                if (gameData == "R")
                 {
                     myRobot->PIDDrive (TICKS_PER_INCH * 149.5);
                     myRobot->PIDTurn (-90);
@@ -355,7 +360,7 @@ class Robot : public frc::IterativeRobot
             }
             if (position == "Center")
             {
-                if (gameData[0] == "R")
+                if (gameData == "R")
                 {
                     myRobot->PIDDrive (TICKS_PER_INCH * 48.5);
                     myRobot->PIDTurn (90);
@@ -369,7 +374,7 @@ class Robot : public frc::IterativeRobot
                     myRobot->PIDTurn (-90);
                     myRobot->PIDDrive (TICKS_PER_INCH * 93);
                 }
-                if (gameData[0] == "L")
+                if (gameData == "L")
                 {
                     myRobot->PIDDrive (TICKS_PER_INCH * 48.5);
                     myRobot->PIDTurn (-90);
@@ -389,7 +394,7 @@ class Robot : public frc::IterativeRobot
         {
             if (position == "Left")
             {
-                if (gameData[0] == "L")
+                if (gameData == "L")
                 {
                     myRobot->PIDDrive (TICKS_PER_INCH * 149.5);
                     myRobot->PIDTurn (90);
@@ -407,7 +412,7 @@ class Robot : public frc::IterativeRobot
                     //manipukator move up
                     myRobot->PIDDrive (TICKS_PER_INCH * 20.5);
                 }
-                if (gameData[0] == "R")
+                if (gameData == "R")
                 {
                     myRobot->PIDDrive (TICKS_PER_INCH * 48.5);
                     myRobot->PIDTurn (90);
@@ -430,7 +435,7 @@ class Robot : public frc::IterativeRobot
             }
             if (position == "Center")
             {
-                if (gameData[0] == "L")
+                if (gameData == "L")
                 {
                     myRobot->PIDDrive (TICKS_PER_INCH * 48.5);
                     myRobot->PIDTurn (-90);
@@ -452,7 +457,7 @@ class Robot : public frc::IterativeRobot
                     //manipulator up
                     myRobot->PIDDrive (TICKS_PER_INCH * 20.5);
                 }
-                if (gameData[0] == "R")
+                if (gameData == "R")
                 {
                     myRobot->PIDDrive (TICKS_PER_INCH * 48.5);
                     myRobot->PIDTurn (90);
@@ -477,7 +482,7 @@ class Robot : public frc::IterativeRobot
             }
             if (position == "Right")
             {
-                if (gameData[0] == "R")
+                if (gameData == "R")
                 {
                     myRobot->PIDDrive (TICKS_PER_INCH * 149.5);
                     myRobot->PIDTurn (-90);
@@ -495,7 +500,7 @@ class Robot : public frc::IterativeRobot
                     //manipulator up
                     myRobot->PIDDrive (TICKS_PER_INCH * 20.5);
                 }
-                if (gameData[0] == "L")
+                if (gameData == "L")
                 {
                     myRobot->PIDDrive (TICKS_PER_INCH * 48.5);
                     myRobot->PIDTurn (-90);
