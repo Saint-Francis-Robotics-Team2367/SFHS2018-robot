@@ -50,6 +50,7 @@ class Robot : public frc::IterativeRobot
         double dConstantAngle = 0;
         double setPointDrive = 0;
         double setPointAngle = MAX_ANGLE_TICKS;
+        double maxDriveMotorCurrent = 30;
         //Misc
         int checkTimeout = 0;
         int timeOut = 100;
@@ -100,6 +101,12 @@ class Robot : public frc::IterativeRobot
             _lMotorFront->SelectProfileSlot (0, 0);
             _lMotorBack->SelectProfileSlot (0, 0);
             _cubeManipAngle->SelectProfileSlot (0, 0);
+
+            //Set drive motor max voltage to 30 amps
+            _lMotorFront->ConfigPeakCurrentLimit(maxDriveMotorCurrent, checkTimeout);
+            _rMotorFront->ConfigPeakCurrentLimit(maxDriveMotorCurrent, checkTimeout);
+            _lMotorBack->ConfigPeakCurrentLimit(maxDriveMotorCurrent, checkTimeout);
+            _rMotorBack->ConfigPeakCurrentLimit(maxDriveMotorCurrent, checkTimeout);
 
             SmartDashboard::PutString("Starting Position (Left, Right, Center)", position);
 
