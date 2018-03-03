@@ -33,12 +33,12 @@ class Robot : public frc::IterativeRobot
     public:
         //Motor channels
         const int joystickNum = 0;
-        const int rMotorFrontNum = 5;
-        const int rMotorBackNum = 4;
-        const int lMotorFrontNum = 3;
+        const int rMotorFrontNum = 2;
+        const int rMotorBackNum = 0;
+        const int lMotorFrontNum = 0;
         const int lMotorBackNum = 2;
-        const int lCubeIntakeNum = 1;
-        const int rCubeIntakeNum = 2;
+        const int lCubeIntakeNum = 4;
+        const int rCubeIntakeNum = 11;
         const int cubeManipAngleNum = 1;
         const int cubeManipAngleLimitNum = 1;
         //Motor tuning constants
