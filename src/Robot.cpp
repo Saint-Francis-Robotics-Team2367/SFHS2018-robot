@@ -51,6 +51,7 @@ class Robot : public frc::IterativeRobot
         double setPointDrive = 0;
         double setPointAngle = MAX_ANGLE_TICKS;
         double maxDriveMotorCurrent = 30;
+        double timePerTrajectoryPoint = 1000;
         //Misc
         int checkTimeout = 0;
         int timeOut = 100;
@@ -262,6 +263,11 @@ class Robot : public frc::IterativeRobot
             _rMotorBack->GetSensorCollection ().SetQuadraturePosition (0, checkTimeout);
             _lMotorFront->GetSensorCollection ().SetQuadraturePosition (0, checkTimeout);
             _lMotorBack->GetSensorCollection ().SetQuadraturePosition (0, checkTimeout);
+
+            _rMotorFront->ConfigMotionProfileTrajectoryPeriod(timePerTrajectoryPoint, checkTimeout);
+            _rMotorBack->ConfigMotionProfileTrajectoryPeriod(timePerTrajectoryPoint, checkTimeout);
+            _lMotorFront->ConfigMotionProfileTrajectoryPeriod(timePerTrajectoryPoint, checkTimeout);
+            _lMotorBack->ConfigMotionProfileTrajectoryPeriod(timePerTrajectoryPoint, checkTimeout);
 
             _lMotorFront->WPI_TalonSRX::Set(ctre::phoenix::motorcontrol::ControlMode::MotionProfile, 1);
             _rMotorFront->WPI_TalonSRX::Set(ctre::phoenix::motorcontrol::ControlMode::MotionProfile, 1);
