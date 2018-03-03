@@ -4,8 +4,8 @@
 
 using namespace frc;
 
-SFDrive::SFDrive(WPI_TalonSRX * lMotor, WPI_TalonSRX * rMotor, AHRS * ahrs) :
-                m_leftMotor(lMotor), m_rightMotor(rMotor), m_ahrs(ahrs) { }
+SFDrive::SFDrive(WPI_TalonSRX * lMotor, WPI_TalonSRX * rMotor) :
+                m_leftMotor(lMotor), m_rightMotor(rMotor) { }
 
 void SFDrive::ArcadeDrive(double xSpeed, double zRotation) {
         double leftMotorOutput;

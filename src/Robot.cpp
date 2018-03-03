@@ -19,8 +19,12 @@
 #include <SmartDashboard/SendableChooser.h>
 #include <SmartDashboard/SmartDashboard.h>
 #include <ctre/Phoenix.h>
-#include "AHRS.h"
 #include "SFDrive.h"
+#include <Spark.h>
+#include <DriverStation.h>
+#include <Counter.h>
+#include <Timer.h>
+#include <DigitalInput.h>
 
 #define TRIGGER_DEADZONE 0.1
 
@@ -62,7 +66,6 @@ class Robot : public frc::IterativeRobot
 
     private:
         //Initialize variables
-        AHRS * ahrs; //= new AHRS (SPI::Port::kMXP);
         WPI_TalonSRX * _lMotorFront = new WPI_TalonSRX (lMotorFrontNum);
         WPI_TalonSRX * _lMotorBack = new WPI_TalonSRX (lMotorBackNum);
         WPI_TalonSRX * _rMotorFront = new WPI_TalonSRX (rMotorFrontNum);
@@ -72,7 +75,7 @@ class Robot : public frc::IterativeRobot
         WPI_TalonSRX * _cubeManipAngle = new WPI_TalonSRX (cubeManipAngleNum);
 
         Counter * cubeAngleLimit = new Counter (new DigitalInput (cubeManipAngleLimitNum));
-        SFDrive *myRobot = new SFDrive (_lMotorFront, _rMotorFront, ahrs);
+        SFDrive *myRobot = new SFDrive (_lMotorFront, _rMotorFront);
         Joystick *stick = new Joystick (joystickNum);
 
         void RobotInit ()
