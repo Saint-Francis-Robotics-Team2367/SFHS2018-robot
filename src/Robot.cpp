@@ -43,8 +43,9 @@ class Robot : public frc::IterativeRobot
 	const int lCubeIntakeNum = 1;
 	const int rCubeIntakeNum = 2;
 	const int cubeManipAngleNum = 10;
-	const int lSolenoidNum = 1; //todo
-	const int rSolenoidNum = 2; //todo
+	const int lSolenoidNum = 1;
+	const int rSolenoidNum = 2;
+
         //Motor tuning constants
         double scale = 1;
         const double TICKS_PER_INCH = 217.3;
@@ -127,7 +128,6 @@ class Robot : public frc::IterativeRobot
             _lMotorBack->ConfigPeakCurrentLimit (maxDriveMotorCurrent, checkTimeout);
             _rMotorBack->ConfigPeakCurrentLimit (maxDriveMotorCurrent, checkTimeout);
             CameraServer::GetInstance()->StartAutomaticCapture();
-
             SmartDashboard::PutString("Mode (NOTHING, BASIC, INTERMEDIATE, ADVANCED, EMERGENCY)", mode);
 	    SmartDashboard::PutBoolean("Allow Field Crossing?", false);
             SmartDashboard::PutString ("Starting Position (LEFT, RIGHT, CENTER)", position);
@@ -167,12 +167,12 @@ class Robot : public frc::IterativeRobot
             if(stick->GetRawButton(7))
               {
         	_lRamp->Set(true);
-        	_rRamp->Set(true);
+        	_rRamp->Set(false);
               }
             else
               {
         	_lRamp->Set(false);
-        	_rRamp->Set(false);
+        	_rRamp->Set(true);
               }
             if(stick->GetRawButton(2)) //b
               {
@@ -319,7 +319,7 @@ class Robot : public frc::IterativeRobot
 	      }
 	    if(mode == "EMERGENCY")
 	      {
-		  if(Timer().GetFPGATimestamp() - matchStart < 1)
+		  if(Timer().GetFPGATimestamp() - matchStart < 4)
 		    myRobot->ArcadeDrive(0.5, 0);
 		  else
 		    myRobot->ArcadeDrive(0, 0);
@@ -328,15 +328,10 @@ class Robot : public frc::IterativeRobot
 	    {
 	      if (!((position == "LEFT" && gameData == "R" && allowFieldCrossing == false) || (position == "RIGHT" && gameData == "L" && allowFieldCrossing == false)))
 		{
-		  _cubeManipAngle->Set (
-		      ctre::phoenix::motorcontrol::ControlMode::Position, switchPoint);
-		  if (Timer ().GetFPGATimestamp () - matchStart > 13)
+		  if (Timer ().GetFPGATimestamp () - matchStart > 4 && _lMotorFront->GetMotionProfileTopLevelBufferCount() + _rMotorFront->GetMotionProfileTopLevelBufferCount() == 0)
 		    {
-		      if (_lMotorFront->GetMotionProfileTopLevelBufferCount() + _rMotorFront->GetMotionProfileTopLevelBufferCount () == 0)
-			{
-			  _lCubeIntake->Set (1);
-			  _rCubeIntake->Set (1);
-			}
+		      _lCubeIntake->Set (1);
+		      _rCubeIntake->Set (1);
 		    }
 		}
 	    }
