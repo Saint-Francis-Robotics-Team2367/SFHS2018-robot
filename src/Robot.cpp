@@ -259,7 +259,8 @@ class Robot : public frc::IterativeRobot
 
         void AutonomousPeriodic ()
         {
-	    if(!autonHasRun)
+          _cubeManipAngle->Set(0.1);
+          if(!autonHasRun)
 	      {
 		if (gameData == "")
 		  return;
