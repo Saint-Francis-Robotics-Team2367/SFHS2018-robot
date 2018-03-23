@@ -87,6 +87,7 @@ class Robot : public frc::IterativeRobot
         WPI_TalonSRX * _cubeManipAngle = new WPI_TalonSRX (cubeManipAngleNum);
         MotionProfileExample * lMotionProfile = new MotionProfileExample(*_lMotorFront);
         MotionProfileExample * rMotionProfile = new MotionProfileExample(*_rMotorFront);
+        Compressor * compressor = new Compressor(0);
 
         SFDrive *myRobot = new SFDrive (_lMotorFront, _rMotorFront);
         Joystick *stick = new Joystick (joystickNum);
@@ -130,6 +131,9 @@ class Robot : public frc::IterativeRobot
             SmartDashboard::PutString("Mode (NOTHING, BASIC, INTERMEDIATE, ADVANCED, EMERGENCY)", mode);
 	    SmartDashboard::PutBoolean("Allow Field Crossing?", false);
             SmartDashboard::PutString ("Starting Position (LEFT, RIGHT, CENTER)", position);
+
+            //Pneumatics
+            compressor->Enabled();
 
             _cubeManipAngle->GetSensorCollection ().SetQuadraturePosition (0, checkTimeout);
         }
