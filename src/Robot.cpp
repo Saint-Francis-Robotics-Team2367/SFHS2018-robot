@@ -101,6 +101,7 @@ class Robot : public frc::IterativeRobot
             _rMotorFront->ConfigSelectedFeedbackSensor (qE, 0, checkTimeout);
             _cubeManipAngle->ConfigSelectedFeedbackSensor (qE, 0, checkTimeout);
             _cubeManipAngle->SetNeutralMode(Brake);
+            _cubeManipAngle->GetSensorCollection ().SetQuadraturePosition (0, checkTimeout);
 
             lMotionProfile->phase = true;
 
@@ -127,15 +128,17 @@ class Robot : public frc::IterativeRobot
             _rMotorFront->ConfigPeakCurrentLimit (maxDriveMotorCurrent, checkTimeout);
             _lMotorBack->ConfigPeakCurrentLimit (maxDriveMotorCurrent, checkTimeout);
             _rMotorBack->ConfigPeakCurrentLimit (maxDriveMotorCurrent, checkTimeout);
+
+            //Shuffleboard
             CameraServer::GetInstance()->StartAutomaticCapture();
+            gameData = "";
+            position = "";
             SmartDashboard::PutString("Mode (NOTHING, BASIC, INTERMEDIATE, ADVANCED, EMERGENCY)", mode);
 	    SmartDashboard::PutBoolean("Allow Field Crossing?", false);
             SmartDashboard::PutString ("Starting Position (LEFT, RIGHT, CENTER)", position);
 
             //Pneumatics
             compressor->Enabled();
-
-            _cubeManipAngle->GetSensorCollection ().SetQuadraturePosition (0, checkTimeout);
         }
 
         void RobotPeriodic ()
@@ -144,7 +147,12 @@ class Robot : public frc::IterativeRobot
                 gameData = frc::DriverStation::GetInstance ().GetGameSpecificMessage ().substr (0, 1);
             if (lastPacket + .5 < Timer ().GetFPGATimestamp ())
             {
-                position = SmartDashboard::GetString ("Starting Position (Left, Right, Center)", position);
+        	if(!SmartDashboard::ContainsKey("Mode (NOTHING, BASIC, INTERMEDIATE, ADVANCED, EMERGENCY)"))
+        	  SmartDashboard::PutString("Mode (NOTHING, BASIC, INTERMEDIATE, ADVANCED, EMERGENCY)", mode);
+        	if(!SmartDashboard::ContainsKey("Allow Field Crossing?"))
+        	  SmartDashboard::PutBoolean("Allow Field Crossing?", false);
+        	if(!SmartDashboard::ContainsKey("Starting Position (LEFT, RIGHT, CENTER)"))
+        	  SmartDashboard::PutString ("Starting Position (LEFT, RIGHT, CENTER)", position);
                 lastPacket = Timer ().GetFPGATimestamp ();
             }
 
@@ -233,7 +241,7 @@ class Robot : public frc::IterativeRobot
 
             if(position != "LEFT" && position != "CENTER" && position != "RIGHT")
               {
-        	DriverStation::ReportError("Error setting position! Auton set to NOTHING");
+        	DriverStation::ReportError("Error setting position! Auton set to EMERGENCY");
         	mode = "EMERGENCY";
               }
 
