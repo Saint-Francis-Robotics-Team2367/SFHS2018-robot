@@ -98,6 +98,7 @@ class Robot : public frc::IterativeRobot
             _lMotorFront->ConfigSelectedFeedbackSensor (qE, 0, checkTimeout);
             _rMotorFront->ConfigSelectedFeedbackSensor (qE, 0, checkTimeout);
             _cubeManipAngle->ConfigSelectedFeedbackSensor (qE, 0, checkTimeout);
+            _cubeManipAngle->SetNeutralMode(Brake);
 
             lMotionProfile->phase = true;
 
