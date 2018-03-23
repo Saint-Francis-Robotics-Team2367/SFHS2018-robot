@@ -41,8 +41,10 @@ class Robot : public frc::IterativeRobot
 	const int lMotorFrontNum = 3;
 	const int lMotorBackNum = 2;
 	const int lCubeIntakeNum = 1;
-	const int rCubeIntakeNum = 2; //todo
-	const int cubeManipAngleNum = 10; //todo
+	const int rCubeIntakeNum = 2;
+	const int cubeManipAngleNum = 10;
+	const int lSolenoidNum = 1; //todo
+	const int rSolenoidNum = 2; //todo
         //Motor tuning constants
         double scale = 1;
         const double TICKS_PER_INCH = 217.3;
@@ -80,6 +82,8 @@ class Robot : public frc::IterativeRobot
         WPI_TalonSRX * _rMotorBack = new WPI_TalonSRX (rMotorBackNum);
         Spark * _lCubeIntake = new Spark (lCubeIntakeNum);
         Spark * _rCubeIntake = new Spark (rCubeIntakeNum);
+        Solenoid * _lRamp = new Solenoid(lSolenoidNum);
+        Solenoid * _rRamp = new Solenoid(rSolenoidNum);
         WPI_TalonSRX * _cubeManipAngle = new WPI_TalonSRX (cubeManipAngleNum);
         MotionProfileExample * lMotionProfile = new MotionProfileExample(*_lMotorFront);
         MotionProfileExample * rMotionProfile = new MotionProfileExample(*_rMotorFront);
@@ -155,6 +159,16 @@ class Robot : public frc::IterativeRobot
         {
             myRobot->ArcadeDrive (scale * stick->GetRawAxis (1), -(stick->GetRawAxis (4) > 0 ? 1 : -1) * stick->GetRawAxis (4) * stick->GetRawAxis (4));
 
+            if(stick->GetRawButton(7))
+              {
+        	_lRamp->Set(true);
+        	_rRamp->Set(true);
+              }
+            else
+              {
+        	_lRamp->Set(false);
+        	_rRamp->Set(false);
+              }
             if(stick->GetRawButton(2)) //b
               {
         	this->_lCubeIntake->Set (1);
