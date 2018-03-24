@@ -234,7 +234,6 @@ class Robot : public frc::IterativeRobot
           rMotionProfile->startFilling(motionProfile_StraightLine_right, count_StraightLine_right);
           lMotionProfile->start();
           rMotionProfile->start();
-          position = SmartDashboard::GetString ("Starting Position (LEFT, RIGHT, CENTER)", "LEFT");
           /*
             DriverStation::ReportError ("AutonInit Started");
 
@@ -274,9 +273,8 @@ class Robot : public frc::IterativeRobot
               _lMotorFront->GetMotionProfileTopLevelBufferCount() +
 	      _rMotorFront->GetMotionProfileTopLevelBufferCount() == 0)
 	      {
-		if((position == "LEFT" && gameData == "L") || (position == "RIGHT" && gameData == "R"))
-		  depositingCube = true;
-		  timeDepositingCube = Timer().GetFPGATimestamp();
+		depositingCube = true;
+		timeDepositingCube = Timer().GetFPGATimestamp();
 	      }
           if(depositingCube)
 	    {
