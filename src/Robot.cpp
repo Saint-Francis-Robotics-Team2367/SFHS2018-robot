@@ -233,18 +233,18 @@ class Robot : public frc::IterativeRobot
 
             position = SmartDashboard::GetString ("Starting Position (LEFT, RIGHT, CENTER)", "LEFT");
             mode = SmartDashboard::GetString("Mode (NOTHING, BASIC, INTERMEDIATE, ADVANCED, EMERGENCY)", "BASIC");
-            allowFieldCrossing = SmartDashboard::GetBoolean("Allow Field Crossing?", false);
+            allowFieldCrossing = SmartDashboard::GetBoolean("Allow Field Crossing?", true);
 
             if(mode != "NOTHING" && mode != "BASIC" && mode != "INTERMEDIATE" && mode != "ADVANCED" && mode != "EMERGENCY")
               {
-        	DriverStation::ReportError("Error setting auton mode! Defaulting to INTERMEDIATE");
-        	mode = "INTERMEDIATE";
+        	DriverStation::ReportError("Error setting auton mode! Defaulting to BASIC");
+        	mode = "BASIC";
               }
 
             if(position != "LEFT" && position != "CENTER" && position != "RIGHT")
               {
-        	DriverStation::ReportError("Error setting position! Auton set to EMERGENCY");
-        	mode = "EMERGENCY";
+        	DriverStation::ReportError("Error setting position! Defaulting to LEFT");
+        	position = "LEFT";
               }
 
             if(mode != "NOTHING" && mode != "EMERGENCY")
@@ -331,7 +331,7 @@ class Robot : public frc::IterativeRobot
 	    if(mode == "EMERGENCY")
 	      {
 		  if(Timer().GetFPGATimestamp() - matchStart < 4)
-		    myRobot->ArcadeDrive(0.5, 0);
+		    myRobot->ArcadeDrive(-0.5, 0);
 		  else
 		    myRobot->ArcadeDrive(0, 0);
 	      }
@@ -339,19 +339,21 @@ class Robot : public frc::IterativeRobot
 	    {
 	      if (!((position == "LEFT" && gameData == "R" && allowFieldCrossing == false) || (position == "RIGHT" && gameData == "L" && allowFieldCrossing == false)))
 		{
-		  if (Timer ().GetFPGATimestamp () - matchStart > 4 && _lMotorFront->GetMotionProfileTopLevelBufferCount() + _rMotorFront->GetMotionProfileTopLevelBufferCount() == 0)
+		  if ((!isDropping && Timer ().GetFPGATimestamp () - matchStart > 4 && _lMotorFront->GetMotionProfileTopLevelBufferCount() + _rMotorFront->GetMotionProfileTopLevelBufferCount() == 0))
 		    {
 			isDropping = true;
 			droppingStart = Timer().GetFPGATimestamp();
-			myRobot->ArcadeDrive(0.5,0);
+			_lMotorFront->Set(ctre::phoenix::motorcontrol::ControlMode::PercentOutput, -0.5);
+			_rMotorFront->Set(ctre::phoenix::motorcontrol::ControlMode::PercentOutput, 0.5);
 		    }
 		}
 	    }
 	  if(isDropping)
 	    {
-	      if(Timer().GetFPGATimestamp() - isDropping > 5)
+	      if(Timer().GetFPGATimestamp() - droppingStart > 5)
 		{
-		  myRobot->ArcadeDrive(0,0);
+		  _lMotorFront->Set(ctre::phoenix::motorcontrol::ControlMode::PercentOutput, 0);
+		  _rMotorFront->Set(ctre::phoenix::motorcontrol::ControlMode::PercentOutput, 0);
 		  _lCubeIntake->Set (1);
 		  _rCubeIntake->Set (1);
 		  isDropping = false;
@@ -414,7 +416,7 @@ class Robot : public frc::IterativeRobot
                 lastTestPacket = Timer ().GetFPGATimestamp ();
             }
             */
-            DriverStation::ReportError(std::to_string(_cubeManipAngle->GetSelectedSensorPosition(0)));
+	    myRobot->ArcadeDrive(1,0);
 	    //_rMotorFront->Set(ctre::phoenix::motorcontrol::ControlMode::Position, 25000);
             //_lMotorFront->Set(ctre::phoenix::motorcontrol::ControlMode::Position, -25000);
         }
