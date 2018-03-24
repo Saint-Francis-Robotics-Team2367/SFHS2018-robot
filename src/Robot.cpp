@@ -68,9 +68,9 @@ class Robot : public frc::IterativeRobot
         double lastTestPacket = 0;
         double switchPoint = 45 * TICKS_PER_DEGREE; //TODO
         //Starting Data
-        std::string position = "";
+        std::string position = "LEFT";
         std::string gameData = "";
-        std::string mode = "";
+        std::string mode = "BASIC";
         bool allowFieldCrossing = false;
         bool autonHasRun = false;
         double matchStart;
@@ -233,7 +233,7 @@ class Robot : public frc::IterativeRobot
 
             position = SmartDashboard::GetString ("Starting Position (LEFT, RIGHT, CENTER)", "LEFT");
             mode = SmartDashboard::GetString("Mode (NOTHING, BASIC, INTERMEDIATE, ADVANCED, EMERGENCY)", "BASIC");
-            allowFieldCrossing = SmartDashboard::GetBoolean("Allow Field Crossing?", true);
+            allowFieldCrossing = SmartDashboard::GetBoolean("Allow Field Crossing?", false);
 
             if(mode != "NOTHING" && mode != "BASIC" && mode != "INTERMEDIATE" && mode != "ADVANCED" && mode != "EMERGENCY")
               {
