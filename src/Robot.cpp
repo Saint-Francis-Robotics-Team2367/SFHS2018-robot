@@ -74,8 +74,6 @@ class Robot : public frc::IterativeRobot
         bool allowFieldCrossing = false;
         bool autonHasRun = false;
         double matchStart;
-        bool depositingCube = false;
-        double timeDepositingCube = 0;
 
     private:
         //Initialize variables
@@ -166,7 +164,6 @@ class Robot : public frc::IterativeRobot
             //Set encoder positions to 0
             ConfigPIDS();
             myRobot->ArcadeDrive (0.0, 0.0);
-            _cubeManipAngle->Set(0);
             currentAnglePos = _cubeManipAngle->GetSelectedSensorPosition(0);
             DriverStation::ReportError ("TeleopInit Completed");
         }
@@ -230,15 +227,10 @@ class Robot : public frc::IterativeRobot
 
         void AutonomousInit ()
         {
-          lMotionProfile->startFilling(motionProfile_StraightLine_left, count_StraightLine_left);
-          rMotionProfile->startFilling(motionProfile_StraightLine_right, count_StraightLine_right);
-          lMotionProfile->start();
-          rMotionProfile->start();
-          /*
             DriverStation::ReportError ("AutonInit Started");
 
             position = SmartDashboard::GetString ("Starting Position (LEFT, RIGHT, CENTER)", "LEFT");
-            mode = SmartDashboard::GetString("Mode (NOTHING, BASIC, INTERMEDIATE, ADVANCED, EMERGENCY)", "INTERMEDIATE");
+            mode = SmartDashboard::GetString("Mode (NOTHING, BASIC, INTERMEDIATE, ADVANCED, EMERGENCY)", "BASIC");
             allowFieldCrossing = SmartDashboard::GetBoolean("Allow Field Crossing?", false);
 
             if(mode != "NOTHING" && mode != "BASIC" && mode != "INTERMEDIATE" && mode != "ADVANCED" && mode != "EMERGENCY")
@@ -263,32 +255,11 @@ class Robot : public frc::IterativeRobot
               autonHasRun = true;
             matchStart = Timer().GetFPGATimestamp();
             DriverStation::ReportError ("AutonInit Completed. Mode: " + mode + " Starting Position: " + position + " Cross field? " + (allowFieldCrossing? "True":"False") + " Switch side: " + gameData);
-        */
         }
 
         void AutonomousPeriodic ()
         {
-          _cubeManipAngle->Set(-0.4);
-          if (Timer ().GetFPGATimestamp () - matchStart > 4 &&
-              _lMotorFront->GetMotionProfileTopLevelBufferCount() +
-	      _rMotorFront->GetMotionProfileTopLevelBufferCount() == 0)
-	      {
-		depositingCube = true;
-		timeDepositingCube = Timer().GetFPGATimestamp();
-	      }
-          if(depositingCube)
-	    {
-	      if(Timer().GetFPGATimestamp() - 1 > timeDepositingCube)
-		depositingCube = false;
-	      else
-		{
-		  myRobot->ArcadeDrive(0.5,0);
-		  _lCubeIntake->Set (1);
-		  _rCubeIntake->Set (1);
-		}
-	    }
-          /*
-          _cubeManipAngle->Set(-0.4);
+          _cubeManipAngle->Set(0.1);
           if(!autonHasRun)
 	      {
 		if (gameData == "")
@@ -370,20 +341,9 @@ class Robot : public frc::IterativeRobot
 		    {
 		      _lCubeIntake->Set (1);
 		      _rCubeIntake->Set (1);
-		      depositingCube = true;
-		      timeDepositingCube = Timer().GetFPGATimestamp();
 		    }
-
 		}
 	    }
-	  if(depositingCube)
-	    {
-	      if(Timer().GetFPGATimestamp() - 1 > timeDepositingCube)
-		depositingCube = false;
-	      else
-		myRobot->ArcadeDrive(0.5,0);
-	    }
-	*/
 	}
 
         void TestInit ()
@@ -441,7 +401,7 @@ class Robot : public frc::IterativeRobot
                 lastTestPacket = Timer ().GetFPGATimestamp ();
             }
             */
-	    _cubeManipAngle->Set(-0.4);
+            DriverStation::ReportError(std::to_string(_cubeManipAngle->GetSelectedSensorPosition(0)));
 	    //_rMotorFront->Set(ctre::phoenix::motorcontrol::ControlMode::Position, 25000);
             //_lMotorFront->Set(ctre::phoenix::motorcontrol::ControlMode::Position, -25000);
         }
