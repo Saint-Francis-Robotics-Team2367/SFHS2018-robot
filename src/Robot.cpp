@@ -74,6 +74,8 @@ class Robot : public frc::IterativeRobot
         bool allowFieldCrossing = false;
         bool autonHasRun = false;
         double matchStart;
+        bool isDropping;
+        double droppingStart = 0;
 
     private:
         //Initialize variables
@@ -259,7 +261,7 @@ class Robot : public frc::IterativeRobot
 
         void AutonomousPeriodic ()
         {
-          _cubeManipAngle->Set(0.1);
+          _cubeManipAngle->Set(-0.4);
           if(!autonHasRun)
 	      {
 		if (gameData == "")
@@ -339,9 +341,20 @@ class Robot : public frc::IterativeRobot
 		{
 		  if (Timer ().GetFPGATimestamp () - matchStart > 4 && _lMotorFront->GetMotionProfileTopLevelBufferCount() + _rMotorFront->GetMotionProfileTopLevelBufferCount() == 0)
 		    {
-		      _lCubeIntake->Set (1);
-		      _rCubeIntake->Set (1);
+			isDropping = true;
+			droppingStart = Timer().GetFPGATimestamp();
+			myRobot->ArcadeDrive(0.5,0);
 		    }
+		}
+	    }
+	  if(isDropping)
+	    {
+	      if(Timer().GetFPGATimestamp() - isDropping > 5)
+		{
+		  myRobot->ArcadeDrive(0,0);
+		  _lCubeIntake->Set (1);
+		  _rCubeIntake->Set (1);
+		  isDropping = false;
 		}
 	    }
 	}
