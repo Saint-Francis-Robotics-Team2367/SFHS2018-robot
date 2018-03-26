@@ -1,11 +1,12 @@
 #include <SFDrive.h>
 #include <ctre/Phoenix.h>
 #include <Timer.h>
+#include <AnalogGyro.h>
 
 using namespace frc;
 
-SFDrive::SFDrive(WPI_TalonSRX * lMotor, WPI_TalonSRX * rMotor) :
-                m_leftMotor(lMotor), m_rightMotor(rMotor) { }
+SFDrive::SFDrive(WPI_TalonSRX * lMotor, WPI_TalonSRX * rMotor, AnalogGyro * _gyro) :
+                m_leftMotor(lMotor), m_rightMotor(rMotor), gyro(_gyro){ }
 
 void SFDrive::ArcadeDrive(double xSpeed, double zRotation) {
         double leftMotorOutput;
@@ -41,16 +42,7 @@ void SFDrive::ArcadeDrive(double xSpeed, double zRotation) {
         m_rightMotor->Set(-rightMotorOutput);
 }
 
-void SFDrive::PIDDrive(double _ticks)
+void GyroTurn(double degrees)
 {
 
-    /*
-    double currentRightSetpoint = m_rightMotor->GetSensorCollection().GetQuadraturePosition();
-    double currentLeftSetpoint =  m_leftMotor->GetSensorCollection().GetQuadraturePosition();
-    if(Timer::GetFPGATimestamp() - m_lastPIDTime >= m_PIDStepTime && (currentRightSetpoint != _rMotorSet || currentLeftSetpoint != _lMotorSet))
-    {
-        m_leftMotor->Set(ctre::phoenix::motorcontrol::ControlMode::Position, fabs(currentLeftSetpoint - _lMotorSet) <= m_PIDStepSize? _lMotorSet: currentLeftSetpoint - _lMotorSet > 0? m_PIDStepSize:-m_PIDStepSize);
-        m_rightMotor->Set(ctre::phoenix::motorcontrol::ControlMode::Position, fabs(currentRightSetpoint - _rMotorSet) <= m_PIDStepSize? _rMotorSet: currentRightSetpoint - _rMotorSet > 0? m_PIDStepSize:-m_PIDStepSize);
-    }
-    */
 }

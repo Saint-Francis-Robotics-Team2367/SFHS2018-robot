@@ -91,8 +91,9 @@ class Robot : public frc::IterativeRobot
         MotionProfileExample * lMotionProfile = new MotionProfileExample(*_lMotorFront);
         MotionProfileExample * rMotionProfile = new MotionProfileExample(*_rMotorFront);
         Compressor * compressor = new Compressor(0);
+        AnalogGyro * gyro = new AnalogGyro(0);
 
-        SFDrive *myRobot = new SFDrive (_lMotorFront, _rMotorFront);
+        SFDrive *myRobot = new SFDrive (_lMotorFront, _rMotorFront, gyro);
         Joystick *stick = new Joystick (joystickNum);
 
         void RobotInit ()
@@ -141,6 +142,9 @@ class Robot : public frc::IterativeRobot
 
             //Pneumatics
             compressor->Enabled();
+
+            //Gyro
+            gyro->Calibrate();
         }
 
         void RobotPeriodic ()
@@ -262,103 +266,7 @@ class Robot : public frc::IterativeRobot
         void AutonomousPeriodic ()
         {
           _cubeManipAngle->Set(-0.4);
-          if(!autonHasRun)
-	      {
-		if (gameData == "")
-		  return;
-		autonHasRun = true;
-                if(mode == "BASIC" || mode == "INTERMEDIATE" || mode == "ADVANCED")
-                  {
-                    if(position == "LEFT")
-                      {
-                	if(gameData == "L")
-                	  {
-                	    lMotionProfile->startFilling(motionProfile_left_left_left, count_left_left_left);
-                	    rMotionProfile->startFilling(motionProfile_left_left_right, count_left_left_right);
-                	  }
-                	else if(gameData == "R")
-                	  {
-                	    if(allowFieldCrossing)
-                	      {
-                		lMotionProfile->startFilling(motionProfile_left_right_left, count_left_right_left);
-                		rMotionProfile->startFilling(motionProfile_left_right_right, count_left_right_right);
-                	      }
-                	    else
-                	      {
-                		lMotionProfile->startFilling(motionProfile_left_left_left, count_left_left_left);
-                		rMotionProfile->startFilling(motionProfile_left_left_right, count_left_left_right);
-                	      }
-                	  }
-                      }
-                    else if(position == "CENTER")
-                      {
-                	if(gameData == "L")
-                	  {
-                	    lMotionProfile->startFilling(motionProfile_center_left_left, count_center_left_left);
-                	    rMotionProfile->startFilling(motionProfile_center_left_right, count_center_left_right);
-                	  }
-                	else if(gameData == "R")
-                	  {
-                	    lMotionProfile->startFilling(motionProfile_center_right_left, count_center_right_left);
-                	    rMotionProfile->startFilling(motionProfile_center_right_right, count_center_right_right);
-                	  }
-                      }
-                    else if(position == "RIGHT")
-                      {
-                	if(gameData == "L")
-                	  {
-                	    if(allowFieldCrossing)
-                	      {
-                		lMotionProfile->startFilling(motionProfile_right_left_left, count_right_left_left);
-                		rMotionProfile->startFilling(motionProfile_right_left_right, count_right_left_right);
-                	      }
-                	    else
-                	      {
-                		lMotionProfile->startFilling(motionProfile_right_right_left, count_right_right_left);
-                		rMotionProfile->startFilling(motionProfile_right_right_right, count_right_right_right);
-                	      }
-                	  }
-                	else if(gameData == "R")
-                	  {
-                	    lMotionProfile->startFilling(motionProfile_right_right_left, count_right_right_left);
-                	    rMotionProfile->startFilling(motionProfile_right_right_right, count_right_right_right);
-                	  }
-                      }
-                  }
-                lMotionProfile->start();
-                rMotionProfile->start();
-	      }
-	    if(mode == "EMERGENCY")
-	      {
-		  if(Timer().GetFPGATimestamp() - matchStart < 4)
-		    myRobot->ArcadeDrive(-0.5, 0);
-		  else
-		    myRobot->ArcadeDrive(0, 0);
-	      }
-	  if (mode == "INTERMEDIATE" || mode == "ADVANCED")
-	    {
-	      if (!((position == "LEFT" && gameData == "R" && allowFieldCrossing == false) || (position == "RIGHT" && gameData == "L" && allowFieldCrossing == false)))
-		{
-		  if ((!isDropping && Timer ().GetFPGATimestamp () - matchStart > 4 && _lMotorFront->GetMotionProfileTopLevelBufferCount() + _rMotorFront->GetMotionProfileTopLevelBufferCount() == 0))
-		    {
-			isDropping = true;
-			droppingStart = Timer().GetFPGATimestamp();
-			_lMotorFront->Set(ctre::phoenix::motorcontrol::ControlMode::PercentOutput, -0.5);
-			_rMotorFront->Set(ctre::phoenix::motorcontrol::ControlMode::PercentOutput, 0.5);
-		    }
-		}
-	    }
-	  if(isDropping)
-	    {
-	      if(Timer().GetFPGATimestamp() - droppingStart > 5)
-		{
-		  _lMotorFront->Set(ctre::phoenix::motorcontrol::ControlMode::PercentOutput, 0);
-		  _rMotorFront->Set(ctre::phoenix::motorcontrol::ControlMode::PercentOutput, 0);
-		  _lCubeIntake->Set (1);
-		  _rCubeIntake->Set (1);
-		  isDropping = false;
-		}
-	    }
+
 	}
 
         void TestInit ()

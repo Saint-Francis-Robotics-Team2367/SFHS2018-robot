@@ -1,4 +1,5 @@
 #include <ctre/Phoenix.h>
+#include <AnalogGyro.h>
 
 #ifndef SRC_SFDRIVE_H_
 #define SRC_SFDRIVE_H_
@@ -9,15 +10,13 @@ private: //MEMBER VARIABLES
         WPI_TalonSRX * m_leftMotor;
         WPI_TalonSRX * m_rightMotor;
         double m_deadband = 0.08;
-        double m_lastPIDTime = 0;
-        int m_PIDStepTime = 10 ^ 8;
-        double m_PIDStepSize = 500;
+        bool isTurning = false;
+        AnalogGyro * gyro;
 
 public:
-        SFDrive(WPI_TalonSRX * lMotor, WPI_TalonSRX * rMotor);
+        SFDrive(WPI_TalonSRX * lMotor, WPI_TalonSRX * rMotor, AnalogGyro * _gyro);
         void ArcadeDrive(double xSpeed, double zRotation);
-        void PIDDrive(double _ticks);
-        void PIDTurn(double degreesClockwise);
+        void GyroTurn(double degrees);
 };
 
 #endif
