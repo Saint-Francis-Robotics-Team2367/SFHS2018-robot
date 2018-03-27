@@ -6,17 +6,20 @@
 
 class SFDrive
 {
-private: //MEMBER VARIABLES
-        WPI_TalonSRX * m_leftMotor;
-        WPI_TalonSRX * m_rightMotor;
-        double m_deadband = 0.08;
-        bool isTurning = false;
-        AnalogGyro * gyro;
+   private:
+      //MEMBER VARIABLES
+      WPI_TalonSRX * m_leftMotor;
+      WPI_TalonSRX * m_rightMotor;
+      double m_deadband = 0.08;
+      bool isTurning = false;
+      double turnSpeed = 0.2;
+      double allowedTurningError = 1;
+      AnalogGyro * gyro;
 
-public:
-        SFDrive(WPI_TalonSRX * lMotor, WPI_TalonSRX * rMotor, AnalogGyro * _gyro);
-        void ArcadeDrive(double xSpeed, double zRotation);
-        void GyroTurn(double degrees);
+   public:
+      SFDrive(WPI_TalonSRX * lMotor, WPI_TalonSRX * rMotor, AnalogGyro * _gyro);
+      void ArcadeDrive(double xSpeed, double zRotation);
+      void GyroTurn(double degrees);
 };
 
 #endif
