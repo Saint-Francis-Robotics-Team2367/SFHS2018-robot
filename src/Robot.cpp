@@ -72,200 +72,202 @@ class Robot : public frc::IterativeRobot
       std::string gameData = "";
       std::string mode = "BASIC";
       bool allowFieldCrossing = false;
-      bool autonHasRun = false;
       double matchStart;
       bool isDropping;
       double droppingStart = 0;
 
    private:
       //Initialize variables
-      WPI_TalonSRX * _lMotorFront = new WPI_TalonSRX (lMotorFrontNum);
-      WPI_TalonSRX * _lMotorBack = new WPI_TalonSRX (lMotorBackNum);
-      WPI_TalonSRX * _rMotorFront = new WPI_TalonSRX (rMotorFrontNum);
-      WPI_TalonSRX * _rMotorBack = new WPI_TalonSRX (rMotorBackNum);
-      Spark * _lCubeIntake = new Spark (lCubeIntakeNum);
-      Spark * _rCubeIntake = new Spark (rCubeIntakeNum);
-      Solenoid * _lRamp = new Solenoid (lSolenoidNum);
-      Solenoid * _rRamp = new Solenoid (rSolenoidNum);
-      WPI_TalonSRX * _cubeManipAngle = new WPI_TalonSRX (cubeManipAngleNum);
-      MotionProfileExample * lMotionProfile = new MotionProfileExample (*_lMotorFront);
-      MotionProfileExample * rMotionProfile = new MotionProfileExample (*_rMotorFront);
-      Compressor * compressor = new Compressor (0);
-      AnalogGyro * gyro = new AnalogGyro (0);
+      WPI_TalonSRX * _lMotorFront = new WPI_TalonSRX(lMotorFrontNum);
+      WPI_TalonSRX * _lMotorBack = new WPI_TalonSRX(lMotorBackNum);
+      WPI_TalonSRX * _rMotorFront = new WPI_TalonSRX(rMotorFrontNum);
+      WPI_TalonSRX * _rMotorBack = new WPI_TalonSRX(rMotorBackNum);
+      Spark * _lCubeIntake = new Spark(lCubeIntakeNum);
+      Spark * _rCubeIntake = new Spark(rCubeIntakeNum);
+      Solenoid * _lRamp = new Solenoid(lSolenoidNum);
+      Solenoid * _rRamp = new Solenoid(rSolenoidNum);
+      WPI_TalonSRX * _cubeManipAngle = new WPI_TalonSRX(cubeManipAngleNum);
+      MotionProfileExample * lMotionProfile = new MotionProfileExample(*_lMotorFront);
+      MotionProfileExample * rMotionProfile = new MotionProfileExample(*_rMotorFront);
+      Compressor * compressor = new Compressor(0);
+      AnalogGyro * gyro = new AnalogGyro(0);
 
-      SFDrive *myRobot = new SFDrive (_lMotorFront, _rMotorFront, gyro);
-      Joystick *stick = new Joystick (joystickNum);
+      SFDrive *myRobot = new SFDrive(_lMotorFront, _rMotorFront, gyro);
+      Joystick *stick = new Joystick(joystickNum);
 
       void RobotInit()
       {
          //used to config the motor controllers for QuadEncoders(type of encoder)
          ctre::phoenix::motorcontrol::FeedbackDevice qE = QuadEncoder;
-         _lMotorFront->ConfigSelectedFeedbackSensor (qE, 0, checkTimeout);
-         _rMotorFront->ConfigSelectedFeedbackSensor (qE, 0, checkTimeout);
-         _cubeManipAngle->ConfigSelectedFeedbackSensor (qE, 0, checkTimeout);
-         _cubeManipAngle->SetNeutralMode (Brake);
-         _cubeManipAngle->GetSensorCollection ().SetQuadraturePosition (0, checkTimeout);
+         _lMotorFront->ConfigSelectedFeedbackSensor(qE, 0, checkTimeout);
+         _rMotorFront->ConfigSelectedFeedbackSensor(qE, 0, checkTimeout);
+         _cubeManipAngle->ConfigSelectedFeedbackSensor(qE, 0, checkTimeout);
+         _cubeManipAngle->SetNeutralMode(Brake);
+         _cubeManipAngle->GetSensorCollection().SetQuadraturePosition(0, checkTimeout);
 
          lMotionProfile->phase = true;
 
          //Set back motors to follower mode
-         _lMotorFront->SetSensorPhase (false);
-         _lMotorBack->SetSensorPhase (false);
+         _lMotorFront->SetSensorPhase(false);
+         _lMotorBack->SetSensorPhase(false);
 
-         _rMotorBack->Set (ctre::phoenix::motorcontrol::ControlMode::Follower, rMotorFrontNum);
-         _lMotorBack->Set (ctre::phoenix::motorcontrol::ControlMode::Follower, lMotorFrontNum);
-         _lMotorFront->SetName ("Left Front");
-         _rMotorFront->SetName ("Right Front");
-         _lMotorBack->SetName ("Left Back");
-         _rMotorBack->SetName ("Right Back");
-         _cubeManipAngle->SetName ("Manipulator Wrist");
+         _rMotorBack->Set(ctre::phoenix::motorcontrol::ControlMode::Follower, rMotorFrontNum);
+         _lMotorBack->Set(ctre::phoenix::motorcontrol::ControlMode::Follower, lMotorFrontNum);
+         _lMotorFront->SetName("Left Front");
+         _rMotorFront->SetName("Right Front");
+         _lMotorBack->SetName("Left Back");
+         _rMotorBack->SetName("Right Back");
+         _cubeManipAngle->SetName("Manipulator Wrist");
 
-         _rMotorFront->SelectProfileSlot (0, 0);
-         _rMotorBack->SelectProfileSlot (0, 0);
-         _lMotorFront->SelectProfileSlot (0, 0);
-         _lMotorBack->SelectProfileSlot (0, 0);
-         _cubeManipAngle->SelectProfileSlot (0, 0);
+         _rMotorFront->SelectProfileSlot(0, 0);
+         _rMotorBack->SelectProfileSlot(0, 0);
+         _lMotorFront->SelectProfileSlot(0, 0);
+         _lMotorBack->SelectProfileSlot(0, 0);
+         _cubeManipAngle->SelectProfileSlot(0, 0);
 
          //Set drive motor max voltage to 30 amps
-         _lMotorFront->ConfigPeakCurrentLimit (maxDriveMotorCurrent, checkTimeout);
-         _rMotorFront->ConfigPeakCurrentLimit (maxDriveMotorCurrent, checkTimeout);
-         _lMotorBack->ConfigPeakCurrentLimit (maxDriveMotorCurrent, checkTimeout);
-         _rMotorBack->ConfigPeakCurrentLimit (maxDriveMotorCurrent, checkTimeout);
+         _lMotorFront->ConfigPeakCurrentLimit(maxDriveMotorCurrent, checkTimeout);
+         _rMotorFront->ConfigPeakCurrentLimit(maxDriveMotorCurrent, checkTimeout);
+         _lMotorBack->ConfigPeakCurrentLimit(maxDriveMotorCurrent, checkTimeout);
+         _rMotorBack->ConfigPeakCurrentLimit(maxDriveMotorCurrent, checkTimeout);
 
          //Shuffleboard
-         CameraServer::GetInstance ()->StartAutomaticCapture ();
+         CameraServer::GetInstance()->StartAutomaticCapture();
          gameData = "";
          position = "";
-         SmartDashboard::PutString ("Mode (NOTHING, BASIC, INTERMEDIATE, ADVANCED, EMERGENCY)", mode);
-         SmartDashboard::PutBoolean ("Allow Field Crossing?", false);
-         SmartDashboard::PutString ("Starting Position (LEFT, RIGHT, CENTER)", position);
+         SmartDashboard::PutString("Mode (NOTHING, BASIC, INTERMEDIATE, ADVANCED, EMERGENCY)", mode);
+         SmartDashboard::PutBoolean("Allow Field Crossing?", false);
+         SmartDashboard::PutString("Starting Position (LEFT, RIGHT, CENTER)", position);
 
          //Pneumatics
-         compressor->Enabled ();
+         compressor->Enabled();
 
          //Gyro
-         gyro->Calibrate ();
+         gyro->Calibrate();
       }
 
       void RobotPeriodic()
       {
-         if (gameData == "")
-            gameData = frc::DriverStation::GetInstance ().GetGameSpecificMessage ().substr (0, 1);
-         if (lastPacket + .5 < Timer ().GetFPGATimestamp ()) {
-            if (!SmartDashboard::ContainsKey ("Mode (NOTHING, BASIC, INTERMEDIATE, ADVANCED, EMERGENCY)"))
-               SmartDashboard::PutString ("Mode (NOTHING, BASIC, INTERMEDIATE, ADVANCED, EMERGENCY)", mode);
-            if (!SmartDashboard::ContainsKey ("Allow Field Crossing?"))
-               SmartDashboard::PutBoolean ("Allow Field Crossing?", false);
-            if (!SmartDashboard::ContainsKey ("Starting Position (LEFT, RIGHT, CENTER)"))
-               SmartDashboard::PutString ("Starting Position (LEFT, RIGHT, CENTER)", position);
-            lastPacket = Timer ().GetFPGATimestamp ();
+         if (lastPacket + .5 < Timer().GetFPGATimestamp()) {
+            if (!SmartDashboard::ContainsKey("Mode (NOTHING, BASIC, INTERMEDIATE, ADVANCED, EMERGENCY)"))
+               SmartDashboard::PutString("Mode (NOTHING, BASIC, INTERMEDIATE, ADVANCED, EMERGENCY)", mode);
+            if (!SmartDashboard::ContainsKey("Allow Field Crossing?"))
+               SmartDashboard::PutBoolean("Allow Field Crossing?", false);
+            if (!SmartDashboard::ContainsKey("Starting Position (LEFT, RIGHT, CENTER)"))
+               SmartDashboard::PutString("Starting Position (LEFT, RIGHT, CENTER)", position);
+            lastPacket = Timer().GetFPGATimestamp();
          }
 
       }
 
       void TeleopInit()
       {
-         DriverStation::ReportError ("TeleopInit Started");
+         DriverStation::ReportError("TeleopInit Started");
          //Set encoder positions to 0
-         ConfigPIDS ();
-         myRobot->ArcadeDrive (0.0, 0.0);
-         currentAnglePos = _cubeManipAngle->GetSelectedSensorPosition (0);
-         DriverStation::ReportError ("TeleopInit Completed");
+         ConfigPIDS();
+         myRobot->ArcadeDrive(0.0, 0.0);
+         currentAnglePos = _cubeManipAngle->GetSelectedSensorPosition(0);
+         DriverStation::ReportError("TeleopInit Completed");
       }
 
       void TeleopPeriodic()
       {
-         myRobot->ArcadeDrive (scale * stick->GetRawAxis (1), -(stick->GetRawAxis (4) > 0 ? 1 : -1) * stick->GetRawAxis (4) * stick->GetRawAxis (4));
+         myRobot->ArcadeDrive(scale * stick->GetRawAxis(1), -(stick->GetRawAxis(4) > 0 ? 1 : -1) * stick->GetRawAxis(4) * stick->GetRawAxis(4));
 
-         if (stick->GetRawButton (7)) {
-            _lRamp->Set (true);
-            _rRamp->Set (false);
+         if (stick->GetRawButton(7)) {
+            _lRamp->Set(true);
+            _rRamp->Set(false);
          }
          else {
-            _lRamp->Set (false);
-            _rRamp->Set (true);
+            _lRamp->Set(false);
+            _rRamp->Set(true);
          }
-         if (stick->GetRawButton (2)) //b
+         if (stick->GetRawButton(2)) //b
                {
-            this->_lCubeIntake->Set (1);
-            this->_rCubeIntake->Set (1);
+            this->_lCubeIntake->Set(1);
+            this->_rCubeIntake->Set(1);
          }
-         else if (stick->GetRawAxis (3) > TRIGGER_DEADZONE) //right trigger
+         else if (stick->GetRawAxis(3) > TRIGGER_DEADZONE) //right trigger
          {
-            this->_lCubeIntake->Set (-stick->GetRawAxis (3));
+            this->_lCubeIntake->Set(-stick->GetRawAxis(3));
          }
-         else if (stick->GetRawAxis (2) > TRIGGER_DEADZONE) //left trigger
+         else if (stick->GetRawAxis(2) > TRIGGER_DEADZONE) //left trigger
          {
-            this->_rCubeIntake->Set (-stick->GetRawAxis (2));
+            this->_rCubeIntake->Set(-stick->GetRawAxis(2));
          }
          else {
-            this->_lCubeIntake->Set (0);
-            this->_rCubeIntake->Set (0);
+            this->_lCubeIntake->Set(0);
+            this->_rCubeIntake->Set(0);
          }
-         if (stick->GetRawButtonReleased (1)) // a button
+         if (stick->GetRawButtonReleased(1)) // a button
                {
             currentAnglePos = TICKS_PER_DEGREE * 90;
          }
-         else if (stick->GetRawButtonReleased (4)) // y button
+         else if (stick->GetRawButtonReleased(4)) // y button
                {
             currentAnglePos = TICKS_PER_DEGREE * 0;
          }
-         else if (stick->GetRawButtonReleased (3)) // x button
+         else if (stick->GetRawButtonReleased(3)) // x button
                {
             currentAnglePos = switchPoint;
          }
-         else if (stick->GetRawButton (6)) // left bumper
+         else if (stick->GetRawButton(6)) // left bumper
                {
-            _cubeManipAngle->Set (1);
+            _cubeManipAngle->Set(1);
          }
-         else if (stick->GetRawButton (5)) // right bumper
+         else if (stick->GetRawButton(5)) // right bumper
                {
-            _cubeManipAngle->Set (-1);
+            _cubeManipAngle->Set(-1);
          }
-         else if (!(stick->GetRawButton (5) || stick->GetRawButton (6)))
-            _cubeManipAngle->Set (0);
+         else if (!(stick->GetRawButton(5) || stick->GetRawButton(6)))
+            _cubeManipAngle->Set(0);
          //_cubeManipAngle->Set (ctre::phoenix::motorcontrol::ControlMode::Position, currentAnglePos);
       }
 
       void AutonomousInit()
       {
-         DriverStation::ReportError ("AutonInit Started");
+         DriverStation::ReportError("AutonInit Started");
 
-         position = SmartDashboard::GetString ("Starting Position (LEFT, RIGHT, CENTER)", "LEFT");
-         mode = SmartDashboard::GetString ("Mode (NOTHING, BASIC, INTERMEDIATE, ADVANCED, EMERGENCY)", "BASIC");
-         allowFieldCrossing = SmartDashboard::GetBoolean ("Allow Field Crossing?", false);
+         position = SmartDashboard::GetString("Starting Position (LEFT, RIGHT, CENTER)", "LEFT");
+         mode = SmartDashboard::GetString("Mode (NOTHING, BASIC, INTERMEDIATE, ADVANCED, EMERGENCY)", "BASIC");
+         allowFieldCrossing = SmartDashboard::GetBoolean("Allow Field Crossing?", false);
 
          if (mode != "NOTHING" && mode != "BASIC" && mode != "INTERMEDIATE" && mode != "ADVANCED" && mode != "EMERGENCY") {
-            DriverStation::ReportError ("Error setting auton mode! Defaulting to BASIC");
+            DriverStation::ReportError("Error setting auton mode! Defaulting to BASIC");
             mode = "BASIC";
          }
 
          if (position != "LEFT" && position != "CENTER" && position != "RIGHT") {
-            DriverStation::ReportError ("Error setting position! Defaulting to LEFT");
+            DriverStation::ReportError("Error setting position! Defaulting to LEFT");
             position = "LEFT";
          }
 
          if (mode != "NOTHING" && mode != "EMERGENCY") {
-            ConfigPIDS ();
-            _lMotorFront->Set (ctre::phoenix::motorcontrol::ControlMode::MotionProfile, 1);
-            _rMotorFront->Set (ctre::phoenix::motorcontrol::ControlMode::MotionProfile, 1);
+            ConfigPIDS();
+            _lMotorFront->Set(ctre::phoenix::motorcontrol::ControlMode::MotionProfile, 1);
+            _rMotorFront->Set(ctre::phoenix::motorcontrol::ControlMode::MotionProfile, 1);
          }
-         else
-            autonHasRun = true;
-         matchStart = Timer ().GetFPGATimestamp ();
-         DriverStation::ReportError ("AutonInit Completed. Mode: " + mode + " Starting Position: " + position + " Cross field? " + (allowFieldCrossing ? "True" : "False") + " Switch side: " + gameData);
+
+         matchStart = Timer().GetFPGATimestamp();
+
+         while (gameData == "")
+            gameData = frc::DriverStation::GetInstance().GetGameSpecificMessage().substr(0, 1);
+
+         DriverStation::ReportError("AutonInit Completed. Mode: " + mode);
+         DriverStation::ReportError("Starting Position: " + position);
+         DriverStation::ReportError("Switch side: " + gameData);
+         DriverStation::ReportError("Cross field? " + (allowFieldCrossing ? "True" : "False"));
       }
 
       void AutonomousPeriodic()
       {
-         _cubeManipAngle->Set (-0.4);
-
+         _cubeManipAngle->Set(-0.4);
       }
 
       void TestInit()
       {
-         DriverStation::ReportError ("TestInit Started");
-         ConfigPIDS ();
+         DriverStation::ReportError("TestInit Started");
+         ConfigPIDS();
          /*Put PID values in ShuffleBoard
           SmartDashboard::PutNumber ("P Drive", pConstantDrive);
           SmartDashboard::PutNumber ("I Drive", iConstantDrive);
@@ -279,7 +281,7 @@ class Robot : public frc::IterativeRobot
           SmartDashboard::PutNumber ("Current Position - Left", 0);
           SmartDashboard::PutNumber ("Current Position - Angle", MAX_ANGLE_TICKS);
           */
-         DriverStation::ReportError ("TestInit Completed");
+         DriverStation::ReportError("TestInit Completed");
       }
 
       void TestPeriodic()
@@ -317,61 +319,60 @@ class Robot : public frc::IterativeRobot
           lastTestPacket = Timer ().GetFPGATimestamp ();
           }
           */
-         myRobot->ArcadeDrive (1, 0);
          //_rMotorFront->Set(ctre::phoenix::motorcontrol::ControlMode::Position, 25000);
          //_lMotorFront->Set(ctre::phoenix::motorcontrol::ControlMode::Position, -25000);
       }
 
       void ConfigPIDS()
       {
-         DriverStation::ReportError ("PID Config Started");
+         DriverStation::ReportError("PID Config Started");
 
-         _rMotorBack->SetNeutralMode (Brake);
-         _lMotorBack->SetNeutralMode (Brake);
+         _rMotorBack->SetNeutralMode(Brake);
+         _lMotorBack->SetNeutralMode(Brake);
 
-         _rMotorFront->GetSensorCollection ().SetQuadraturePosition (0, checkTimeout);
-         _rMotorBack->GetSensorCollection ().SetQuadraturePosition (0, checkTimeout);
-         _lMotorFront->GetSensorCollection ().SetQuadraturePosition (0, checkTimeout);
-         _lMotorBack->GetSensorCollection ().SetQuadraturePosition (0, checkTimeout);
+         _rMotorFront->GetSensorCollection().SetQuadraturePosition(0, checkTimeout);
+         _rMotorBack->GetSensorCollection().SetQuadraturePosition(0, checkTimeout);
+         _lMotorFront->GetSensorCollection().SetQuadraturePosition(0, checkTimeout);
+         _lMotorBack->GetSensorCollection().SetQuadraturePosition(0, checkTimeout);
 
-         _lMotorFront->Config_kP (0, pConstantDrive, checkTimeout);
-         _lMotorFront->Config_kI (0, iConstantDrive, checkTimeout);
-         _lMotorFront->Config_kD (0, dConstantDrive, checkTimeout);
-         _lMotorFront->Config_kF (0, fConstantDrive, checkTimeout);
+         _lMotorFront->Config_kP(0, pConstantDrive, checkTimeout);
+         _lMotorFront->Config_kI(0, iConstantDrive, checkTimeout);
+         _lMotorFront->Config_kD(0, dConstantDrive, checkTimeout);
+         _lMotorFront->Config_kF(0, fConstantDrive, checkTimeout);
 
-         _lMotorBack->Config_kP (0, pConstantDrive, checkTimeout);
-         _lMotorBack->Config_kI (0, iConstantDrive, checkTimeout);
-         _lMotorBack->Config_kD (0, dConstantDrive, checkTimeout);
-         _lMotorBack->Config_kF (0, fConstantDrive, checkTimeout);
+         _lMotorBack->Config_kP(0, pConstantDrive, checkTimeout);
+         _lMotorBack->Config_kI(0, iConstantDrive, checkTimeout);
+         _lMotorBack->Config_kD(0, dConstantDrive, checkTimeout);
+         _lMotorBack->Config_kF(0, fConstantDrive, checkTimeout);
 
-         _rMotorFront->Config_kP (0, pConstantDrive, checkTimeout);
-         _rMotorFront->Config_kI (0, iConstantDrive, checkTimeout);
-         _rMotorFront->Config_kD (0, dConstantDrive, checkTimeout);
-         _rMotorFront->Config_kF (0, fConstantDrive, checkTimeout);
+         _rMotorFront->Config_kP(0, pConstantDrive, checkTimeout);
+         _rMotorFront->Config_kI(0, iConstantDrive, checkTimeout);
+         _rMotorFront->Config_kD(0, dConstantDrive, checkTimeout);
+         _rMotorFront->Config_kF(0, fConstantDrive, checkTimeout);
 
-         _rMotorBack->Config_kP (0, pConstantDrive, checkTimeout);
-         _rMotorBack->Config_kI (0, iConstantDrive, checkTimeout);
-         _rMotorBack->Config_kD (0, dConstantDrive, checkTimeout);
-         _rMotorBack->Config_kF (0, fConstantDrive, checkTimeout);
+         _rMotorBack->Config_kP(0, pConstantDrive, checkTimeout);
+         _rMotorBack->Config_kI(0, iConstantDrive, checkTimeout);
+         _rMotorBack->Config_kD(0, dConstantDrive, checkTimeout);
+         _rMotorBack->Config_kF(0, fConstantDrive, checkTimeout);
 
-         _cubeManipAngle->Config_kP (0, pConstantAngle, checkTimeout);
-         _cubeManipAngle->Config_kI (0, iConstantAngle, checkTimeout);
-         _cubeManipAngle->Config_kD (0, dConstantAngle, checkTimeout);
-         _cubeManipAngle->Config_kF (0, fConstantDrive, checkTimeout);
+         _cubeManipAngle->Config_kP(0, pConstantAngle, checkTimeout);
+         _cubeManipAngle->Config_kI(0, iConstantAngle, checkTimeout);
+         _cubeManipAngle->Config_kD(0, dConstantAngle, checkTimeout);
+         _cubeManipAngle->Config_kF(0, fConstantDrive, checkTimeout);
 
-         DriverStation::ReportError ("PID Config Completed");
+         DriverStation::ReportError("PID Config Completed");
       }
 
       void DisabledInit()
       {
-         lMotionProfile->reset ();
-         rMotionProfile->reset ();
+         lMotionProfile->reset();
+         rMotionProfile->reset();
       }
 
       void DisabledPeriodic()
       {
-         _lMotorFront->Set (ctre::phoenix::motorcontrol::ControlMode::PercentOutput, 0);
-         _rMotorFront->Set (ctre::phoenix::motorcontrol::ControlMode::PercentOutput, 0);
+         _lMotorFront->Set(ctre::phoenix::motorcontrol::ControlMode::PercentOutput, 0);
+         _rMotorFront->Set(ctre::phoenix::motorcontrol::ControlMode::PercentOutput, 0);
       }
 };
 
