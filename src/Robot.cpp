@@ -148,7 +148,8 @@ class Robot : public frc::IterativeRobot
 
       void RobotPeriodic()
       {
-         if (lastPacket + .5 < Timer().GetFPGATimestamp()) {
+         if (lastPacket + .5 < Timer().GetFPGATimestamp())
+         {
             if (!SmartDashboard::ContainsKey("Mode (NOTHING, BASIC, INTERMEDIATE, ADVANCED, EMERGENCY)"))
                SmartDashboard::PutString("Mode (NOTHING, BASIC, INTERMEDIATE, ADVANCED, EMERGENCY)", mode);
             if (!SmartDashboard::ContainsKey("Allow Field Crossing?"))
@@ -174,16 +175,18 @@ class Robot : public frc::IterativeRobot
       {
          myRobot->ArcadeDrive(scale * stick->GetRawAxis(1), -(stick->GetRawAxis(4) > 0 ? 1 : -1) * stick->GetRawAxis(4) * stick->GetRawAxis(4));
 
-         if (stick->GetRawButton(7)) {
+         if (stick->GetRawButton(7))
+         {
             _lRamp->Set(true);
             _rRamp->Set(false);
          }
-         else {
+         else
+         {
             _lRamp->Set(false);
             _rRamp->Set(true);
          }
          if (stick->GetRawButton(2)) //b
-               {
+         {
             this->_lCubeIntake->Set(1);
             this->_rCubeIntake->Set(1);
          }
@@ -195,28 +198,29 @@ class Robot : public frc::IterativeRobot
          {
             this->_rCubeIntake->Set(-stick->GetRawAxis(2));
          }
-         else {
+         else
+         {
             this->_lCubeIntake->Set(0);
             this->_rCubeIntake->Set(0);
          }
          if (stick->GetRawButtonReleased(1)) // a button
-               {
+         {
             currentAnglePos = TICKS_PER_DEGREE * 90;
          }
          else if (stick->GetRawButtonReleased(4)) // y button
-               {
+         {
             currentAnglePos = TICKS_PER_DEGREE * 0;
          }
          else if (stick->GetRawButtonReleased(3)) // x button
-               {
+         {
             currentAnglePos = switchPoint;
          }
          else if (stick->GetRawButton(6)) // left bumper
-               {
+         {
             _cubeManipAngle->Set(1);
          }
          else if (stick->GetRawButton(5)) // right bumper
-               {
+         {
             _cubeManipAngle->Set(-1);
          }
          else if (!(stick->GetRawButton(5) || stick->GetRawButton(6)))
@@ -232,17 +236,20 @@ class Robot : public frc::IterativeRobot
          mode = SmartDashboard::GetString("Mode (NOTHING, BASIC, INTERMEDIATE, ADVANCED, EMERGENCY)", "BASIC");
          allowFieldCrossing = SmartDashboard::GetBoolean("Allow Field Crossing?", false);
 
-         if (mode != "NOTHING" && mode != "BASIC" && mode != "INTERMEDIATE" && mode != "ADVANCED" && mode != "EMERGENCY") {
+         if (mode != "NOTHING" && mode != "BASIC" && mode != "INTERMEDIATE" && mode != "ADVANCED" && mode != "EMERGENCY")
+         {
             DriverStation::ReportError("Error setting auton mode! Defaulting to BASIC");
             mode = "BASIC";
          }
 
-         if (position != "LEFT" && position != "CENTER" && position != "RIGHT") {
+         if (position != "LEFT" && position != "CENTER" && position != "RIGHT")
+         {
             DriverStation::ReportError("Error setting position! Defaulting to LEFT");
             position = "LEFT";
          }
 
-         if (mode != "NOTHING" && mode != "EMERGENCY") {
+         if (mode != "NOTHING" && mode != "EMERGENCY")
+         {
             ConfigPIDS();
             _lMotorFront->Set(ctre::phoenix::motorcontrol::ControlMode::MotionProfile, 1);
             _rMotorFront->Set(ctre::phoenix::motorcontrol::ControlMode::MotionProfile, 1);
@@ -258,10 +265,12 @@ class Robot : public frc::IterativeRobot
          DriverStation::ReportError("Switch side: " + gameData == "L" ? "LEFT" : "RIGHT");
          DriverStation::ReportError("Cross field? " + allowFieldCrossing ? "TRUE" : "FALSE");
 
-         if (mode == "BASIC" || mode == "INTERMEDIATE" || mode == "ADVANCED") {
-            if (position == "LEFT") {
+         if (mode == "BASIC" || mode == "INTERMEDIATE" || mode == "ADVANCED")
+         {
+            if (position == "LEFT")
+            {
                if (gameData == "L" || (gameData == "R" && !allowFieldCrossing)) //Moves to left switch from left side
-                     {
+               {
 
                }
                else //Moves to right switch from right side
@@ -269,19 +278,21 @@ class Robot : public frc::IterativeRobot
 
                }
             }
-            if (position == "CENTER") {
+            if (position == "CENTER")
+            {
                if (gameData == "L") //Moves to left switch from center
-                     {
+               {
 
                }
                else if (gameData == "R") //Moves to right switch from center
-                     {
+               {
 
                }
             }
-            if (position == "RIGHT") {
+            if (position == "RIGHT")
+            {
                if (gameData == "R" || (gameData == "L" && !allowFieldCrossing)) //Moves to right switch from right side
-                     {
+               {
 
                }
                else //Moves to left switch from right side
@@ -292,11 +303,12 @@ class Robot : public frc::IterativeRobot
          }
 
          if (mode == "INTERMEDIATE" || mode == "ADVANCED") //Shoots cube if applicable
-               {
+         {
 
          }
 
-         if (mode == "ADVANCED") {
+         if (mode == "ADVANCED")
+         {
 
          }
 

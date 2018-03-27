@@ -22,24 +22,30 @@ void SFDrive::ArcadeDrive(double xSpeed, double zRotation)
 
    double maxInput = std::copysign(std::max(std::abs(xSpeed), std::abs(zRotation)), xSpeed);
 
-   if (xSpeed >= 0.0) {
+   if (xSpeed >= 0.0)
+   {
       // First quadrant, else second quadrant
-      if (zRotation >= 0.0) {
+      if (zRotation >= 0.0)
+      {
          leftMotorOutput = maxInput;
          rightMotorOutput = xSpeed - zRotation;
       }
-      else {
+      else
+      {
          leftMotorOutput = xSpeed + zRotation;
          rightMotorOutput = maxInput;
       }
    }
-   else {
+   else
+   {
       // Third quadrant, else fourth quadrant
-      if (zRotation >= 0.0) {
+      if (zRotation >= 0.0)
+      {
          leftMotorOutput = xSpeed + zRotation;
          rightMotorOutput = maxInput;
       }
-      else {
+      else
+      {
          leftMotorOutput = maxInput;
          rightMotorOutput = xSpeed - zRotation;
       }
@@ -51,10 +57,10 @@ void SFDrive::ArcadeDrive(double xSpeed, double zRotation)
 void SFDrive::GyroTurn(double degrees)
 {
    double targetAngle = gyro->GetAngle() + degrees;
-   while(std::fabs(targetAngle - gyro->GetAngle()) < allowedTurningError)
-      if(degrees < 0)
+   while (std::fabs(targetAngle - gyro->GetAngle()) < allowedTurningError)
+      if (degrees < 0)
          ArcadeDrive(0, -0.5);
       else
          ArcadeDrive(0, 0.5);
-   ArcadeDrive(0,0);
+   ArcadeDrive(0, 0);
 }
