@@ -301,11 +301,25 @@ class Robot : public frc::IterativeRobot
             {
                if (gameData == "L") //Moves to left switch from center
                {
-
+                  lMotionProfile->startFilling(motionProfile_center_1_left, count_center_1_left);
+                  rMotionProfile->startFilling(motionProfile_center_1_right, count_center_1_right);
+                  myRobot->GyroTurn(90);
+                  lMotionProfile->startFilling(motionProfile_center_2_left, count_center_2_left);
+                  rMotionProfile->startFilling(motionProfile_center_2_right, count_center_2_right);
+                  myRobot->GyroTurn(-90);
+                  lMotionProfile->startFilling(motionProfile_center_3_left, count_center_3_left);
+                  rMotionProfile->startFilling(motionProfile_center_3_right, count_center_3_right);
                }
                else if (gameData == "R") //Moves to right switch from center
                {
-
+                  lMotionProfile->startFilling(motionProfile_center_1_left, count_center_1_left);
+                  rMotionProfile->startFilling(motionProfile_center_1_right, count_center_1_right);
+                  myRobot->GyroTurn(-90);
+                  lMotionProfile->startFilling(motionProfile_center_2_left, count_center_2_left);
+                  rMotionProfile->startFilling(motionProfile_center_2_right, count_center_2_right);
+                  myRobot->GyroTurn(90);
+                  lMotionProfile->startFilling(motionProfile_center_3_left, count_center_3_left);
+                  rMotionProfile->startFilling(motionProfile_center_3_right, count_center_3_right);
                }
             }
             if (position == "RIGHT")
@@ -343,7 +357,8 @@ class Robot : public frc::IterativeRobot
 
          if (mode == "INTERMEDIATE" || mode == "ADVANCED") //Shoots cube if applicable
          {
-
+            _rCubeIntake->Set(1);
+            _lCubeIntake->Set(1);
          }
 
          if (mode == "ADVANCED") //2nd cube of 2 cube auto
