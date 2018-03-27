@@ -253,10 +253,53 @@ class Robot : public frc::IterativeRobot
          while (gameData == "")
             gameData = frc::DriverStation::GetInstance().GetGameSpecificMessage().substr(0, 1);
 
-         DriverStation::ReportError("AutonInit Completed. Mode: " + mode);
+         DriverStation::ReportError("Mode: " + mode);
          DriverStation::ReportError("Starting Position: " + position);
-         DriverStation::ReportError("Switch side: " + gameData);
-         DriverStation::ReportError("Cross field? " + (allowFieldCrossing ? "True" : "False"));
+         DriverStation::ReportError("Switch side: " + gameData == "L" ? "LEFT" : "RIGHT");
+         DriverStation::ReportError("Cross field? " + allowFieldCrossing ? "TRUE" : "FALSE");
+
+         if (mode == "BASIC" || mode == "INTERMEDIATE" || mode == "ADVANCED") {
+            if (position == "LEFT") {
+               if (gameData == "L" || (gameData == "R" && !allowFieldCrossing)) //Moves to left switch from left side
+                     {
+
+               }
+               else //Moves to right switch from right side
+               {
+
+               }
+            }
+            if (position == "CENTER") {
+               if (gameData == "L") //Moves to left switch from center
+                     {
+
+               }
+               else if (gameData == "R") //Moves to right switch from center
+                     {
+
+               }
+            }
+            if (position == "RIGHT") {
+               if (gameData == "R" || (gameData == "L" && !allowFieldCrossing)) //Moves to right switch from right side
+                     {
+
+               }
+               else //Moves to left switch from right side
+               {
+
+               }
+            }
+         }
+
+         if (mode == "INTERMEDIATE" || mode == "ADVANCED") //Shoots cube if applicable
+               {
+
+         }
+
+         if (mode == "ADVANCED") {
+
+         }
+
       }
 
       void AutonomousPeriodic()
