@@ -281,7 +281,20 @@ class Robot : public frc::IterativeRobot
                }
                else //Moves to right switch from right side
                {
-
+                  lMotionProfile->startFilling(motionProfile_cross_1_left, count_cross_1_left);
+                  rMotionProfile->startFilling(motionProfile_cross_1_right, count_cross_1_right);
+                  WaitUntilMotionProfileDone();
+                  myRobot->GyroTurn(90);
+                  lMotionProfile->startFilling(motionProfile_cross_2_left, count_cross_2_left);
+                  rMotionProfile->startFilling(motionProfile_cross_2_right, count_cross_2_right);
+                  WaitUntilMotionProfileDone();
+                  myRobot->GyroTurn(90);
+                  lMotionProfile->startFilling(motionProfile_cross_3_left, count_cross_3_left);
+                  rMotionProfile->startFilling(motionProfile_cross_3_right, count_cross_3_right);
+                  WaitUntilMotionProfileDone();
+                  myRobot->GyroTurn(90);
+                  lMotionProfile->startFilling(motionProfile_cross_4_left, count_cross_4_left);
+                  rMotionProfile->startFilling(motionProfile_cross_4_right, count_cross_4_right);
                }
             }
             if (position == "CENTER")
@@ -308,10 +321,25 @@ class Robot : public frc::IterativeRobot
                }
                else //Moves to left switch from right side
                {
-
+                  lMotionProfile->startFilling(motionProfile_cross_1_left, count_cross_1_left);
+                  rMotionProfile->startFilling(motionProfile_cross_1_right, count_cross_1_right);
+                  WaitUntilMotionProfileDone();
+                  myRobot->GyroTurn(-90);
+                  lMotionProfile->startFilling(motionProfile_cross_2_left, count_cross_2_left);
+                  rMotionProfile->startFilling(motionProfile_cross_2_right, count_cross_2_right);
+                  WaitUntilMotionProfileDone();
+                  myRobot->GyroTurn(-90);
+                  lMotionProfile->startFilling(motionProfile_cross_3_left, count_cross_3_left);
+                  rMotionProfile->startFilling(motionProfile_cross_3_right, count_cross_3_right);
+                  WaitUntilMotionProfileDone();
+                  myRobot->GyroTurn(-90);
+                  lMotionProfile->startFilling(motionProfile_cross_4_left, count_cross_4_left);
+                  rMotionProfile->startFilling(motionProfile_cross_4_right, count_cross_4_right);
                }
             }
          }
+
+         WaitUntilMotionProfileDone();
 
          if (mode == "INTERMEDIATE" || mode == "ADVANCED") //Shoots cube if applicable
          {
