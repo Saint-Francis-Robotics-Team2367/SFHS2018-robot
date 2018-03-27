@@ -53,7 +53,7 @@ class Robot : public frc::IterativeRobot
         double pConstantDrive = 1;
         double iConstantDrive = 0;
         double dConstantDrive = 10;
-        double fConstantDrive = 5933;
+        double fConstantDrive = 0.1724;
         double pConstantAngle = 1;
         double iConstantAngle = 0;
         double dConstantAngle = 0;
