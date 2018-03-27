@@ -28,6 +28,7 @@
 #include <CameraServer.h>
 #include <MotionProfileExample.h>
 #include <MotionProfile.h>
+#include <stdlib.h>
 
 #define TRIGGER_DEADZONE 0.1
 
@@ -271,7 +272,12 @@ class Robot : public frc::IterativeRobot
             {
                if (gameData == "L" || (gameData == "R" && !allowFieldCrossing)) //Moves to left switch from left side
                {
-
+                  lMotionProfile->startFilling(motionProfile_sides_1_left, count_sides_1_left);
+                  rMotionProfile->startFilling(motionProfile_sides_1_right, count_sides_1_right);
+                  WaitUntilMotionProfileDone();
+                  myRobot->GyroTurn(90);
+                  lMotionProfile->startFilling(motionProfile_sides_2_left, count_sides_2_left);
+                  rMotionProfile->startFilling(motionProfile_sides_2_right, count_sides_2_right);
                }
                else //Moves to right switch from right side
                {
@@ -293,7 +299,12 @@ class Robot : public frc::IterativeRobot
             {
                if (gameData == "R" || (gameData == "L" && !allowFieldCrossing)) //Moves to right switch from right side
                {
-
+                  lMotionProfile->startFilling(motionProfile_sides_1_left, count_sides_1_left);
+                  rMotionProfile->startFilling(motionProfile_sides_1_right, count_sides_1_right);
+                  WaitUntilMotionProfileDone();
+                  myRobot->GyroTurn(-90);
+                  lMotionProfile->startFilling(motionProfile_sides_2_left, count_sides_2_left);
+                  rMotionProfile->startFilling(motionProfile_sides_2_right, count_sides_2_right);
                }
                else //Moves to left switch from right side
                {
@@ -307,16 +318,16 @@ class Robot : public frc::IterativeRobot
 
          }
 
-         if (mode == "ADVANCED")
+         if (mode == "ADVANCED") //2nd cube of 2 cube auto
          {
-
+            Pause(2);
          }
-
       }
 
       void AutonomousPeriodic()
       {
-         _cubeManipAngle->Set(-0.4);
+         if(mode != "NOTHING")
+            _cubeManipAngle->Set(-0.4);
       }
 
       void TestInit()
@@ -428,6 +439,23 @@ class Robot : public frc::IterativeRobot
       {
          _lMotorFront->Set(ctre::phoenix::motorcontrol::ControlMode::PercentOutput, 0);
          _rMotorFront->Set(ctre::phoenix::motorcontrol::ControlMode::PercentOutput, 0);
+      }
+
+      void Pause(double seconds)
+      {
+         int pauseStart = Timer().GetFPGATimestamp();
+         while(Timer().GetFPGATimestamp() - pauseStart < seconds)
+         {
+            true;
+         }
+      }
+
+      void WaitUntilMotionProfileDone()
+      {
+         while(!(_lMotorFront->Get() == 0 && _rMotorFront->Get() == 0 && _lMotorFront->GetMotionProfileTopLevelBufferCount() == 0 && _rMotorFront->GetMotionProfileTopLevelBufferCount() == 0))
+         {
+            true;
+         }
       }
 };
 
