@@ -36,10 +36,11 @@ class Robot : public frc::IterativeRobot
     public:
         //Motor channels
 	const int joystickNum = 0;
-	const int rMotorFrontNum = 5;
-	const int rMotorBackNum = 4;
-	const int lMotorFrontNum = 3;
-	const int lMotorBackNum = 2;
+    const int rMotorFrontNum = 5;
+    const int rMotorBackNum = 4;
+    const int lMotorFrontNum = 2;
+    const int lMotorBackNum = 3;
+
 	const int lCubeIntakeNum = 1;
 	const int rCubeIntakeNum = 2;
 	const int cubeManipAngleNum = 10;
@@ -85,12 +86,12 @@ class Robot : public frc::IterativeRobot
         WPI_TalonSRX * _rMotorBack = new WPI_TalonSRX (rMotorBackNum);
         Spark * _lCubeIntake = new Spark (lCubeIntakeNum);
         Spark * _rCubeIntake = new Spark (rCubeIntakeNum);
-        Solenoid * _lRamp = new Solenoid(lSolenoidNum);
-        Solenoid * _rRamp = new Solenoid(rSolenoidNum);
+        /*Solenoid * _lRamp = new Solenoid(lSolenoidNum);
+        Solenoid * _rRamp = new Solenoid(rSolenoidNum);*/
         WPI_TalonSRX * _cubeManipAngle = new WPI_TalonSRX (cubeManipAngleNum);
         MotionProfileExample * lMotionProfile = new MotionProfileExample(*_lMotorFront);
         MotionProfileExample * rMotionProfile = new MotionProfileExample(*_rMotorFront);
-        Compressor * compressor = new Compressor(0);
+        //Compressor * compressor = new Compressor(0);
 
         SFDrive *myRobot = new SFDrive (_lMotorFront, _rMotorFront);
         Joystick *stick = new Joystick (joystickNum);
@@ -139,8 +140,7 @@ class Robot : public frc::IterativeRobot
 	    SmartDashboard::PutBoolean("Allow Field Crossing?", false);
             SmartDashboard::PutString ("Starting Position (LEFT, RIGHT, CENTER)", position);
 
-            //Pneumatics
-            compressor->Enabled();
+
         }
 
         void RobotPeriodic ()
@@ -174,7 +174,7 @@ class Robot : public frc::IterativeRobot
         {
             myRobot->ArcadeDrive (scale * stick->GetRawAxis (1), -(stick->GetRawAxis (4) > 0 ? 1 : -1) * stick->GetRawAxis (4) * stick->GetRawAxis (4));
 
-            if(stick->GetRawButton(7))
+            /*if(stick->GetRawButton(7))
               {
         	_lRamp->Set(true);
         	_rRamp->Set(false);
@@ -183,7 +183,7 @@ class Robot : public frc::IterativeRobot
               {
         	_lRamp->Set(false);
         	_rRamp->Set(true);
-              }
+              }*/
             if(stick->GetRawButton(2)) //b
               {
         	this->_lCubeIntake->Set (1);
@@ -227,139 +227,35 @@ class Robot : public frc::IterativeRobot
             //_cubeManipAngle->Set (ctre::phoenix::motorcontrol::ControlMode::Position, currentAnglePos);
         }
 
+#define MAX_CURRENT 10
         void AutonomousInit ()
         {
-            DriverStation::ReportError ("AutonInit Started");
-
-            position = SmartDashboard::GetString ("Starting Position (LEFT, RIGHT, CENTER)", "LEFT");
-            mode = SmartDashboard::GetString("Mode (NOTHING, BASIC, INTERMEDIATE, ADVANCED, EMERGENCY)", "BASIC");
-            allowFieldCrossing = SmartDashboard::GetBoolean("Allow Field Crossing?", false);
-
-            if(mode != "NOTHING" && mode != "BASIC" && mode != "INTERMEDIATE" && mode != "ADVANCED" && mode != "EMERGENCY")
-              {
-        	DriverStation::ReportError("Error setting auton mode! Defaulting to BASIC");
-        	mode = "BASIC";
-              }
-
-            if(position != "LEFT" && position != "CENTER" && position != "RIGHT")
-              {
-        	DriverStation::ReportError("Error setting position! Defaulting to LEFT");
-        	position = "LEFT";
-              }
-
-            if(mode != "NOTHING" && mode != "EMERGENCY")
-              {
         	ConfigPIDS();
-                _lMotorFront->Set(ctre::phoenix::motorcontrol::ControlMode::MotionProfile, 1);
-                _rMotorFront->Set(ctre::phoenix::motorcontrol::ControlMode::MotionProfile, 1);
-              }
-            else
-              autonHasRun = true;
-            matchStart = Timer().GetFPGATimestamp();
-            DriverStation::ReportError ("AutonInit Completed. Mode: " + mode + " Starting Position: " + position + " Cross field? " + (allowFieldCrossing? "True":"False") + " Switch side: " + gameData);
+            _lMotorFront->ConfigPeakCurrentLimit (MAX_CURRENT, checkTimeout);
+            _rMotorFront->ConfigPeakCurrentLimit (MAX_CURRENT, checkTimeout);
+            _lMotorBack->ConfigPeakCurrentLimit (MAX_CURRENT, checkTimeout);
+            _rMotorBack->ConfigPeakCurrentLimit (MAX_CURRENT, checkTimeout);
+
+
         }
 
+#define FIRST_MOVE 3000
+#define ERROR 300
+#define TICK_PER_REV 4000
+#define TARGET_REV_SEC 4000
         void AutonomousPeriodic ()
         {
-          _cubeManipAngle->Set(-0.4);
-          if(!autonHasRun)
-	      {
-		if (gameData == "")
-		  return;
-		autonHasRun = true;
-                if(mode == "BASIC" || mode == "INTERMEDIATE" || mode == "ADVANCED")
-                  {
-                    if(position == "LEFT")
-                      {
-                	if(gameData == "L")
-                	  {
-                	    lMotionProfile->startFilling(motionProfile_left_left_left, count_left_left_left);
-                	    rMotionProfile->startFilling(motionProfile_left_left_right, count_left_left_right);
-                	  }
-                	else if(gameData == "R")
-                	  {
-                	    if(allowFieldCrossing)
-                	      {
-                		lMotionProfile->startFilling(motionProfile_left_right_left, count_left_right_left);
-                		rMotionProfile->startFilling(motionProfile_left_right_right, count_left_right_right);
-                	      }
-                	    else
-                	      {
-                		lMotionProfile->startFilling(motionProfile_left_left_left, count_left_left_left);
-                		rMotionProfile->startFilling(motionProfile_left_left_right, count_left_left_right);
-                	      }
-                	  }
-                      }
-                    else if(position == "CENTER")
-                      {
-                	if(gameData == "L")
-                	  {
-                	    lMotionProfile->startFilling(motionProfile_center_left_left, count_center_left_left);
-                	    rMotionProfile->startFilling(motionProfile_center_left_right, count_center_left_right);
-                	  }
-                	else if(gameData == "R")
-                	  {
-                	    lMotionProfile->startFilling(motionProfile_center_right_left, count_center_right_left);
-                	    rMotionProfile->startFilling(motionProfile_center_right_right, count_center_right_right);
-                	  }
-                      }
-                    else if(position == "RIGHT")
-                      {
-                	if(gameData == "L")
-                	  {
-                	    if(allowFieldCrossing)
-                	      {
-                		lMotionProfile->startFilling(motionProfile_right_left_left, count_right_left_left);
-                		rMotionProfile->startFilling(motionProfile_right_left_right, count_right_left_right);
-                	      }
-                	    else
-                	      {
-                		lMotionProfile->startFilling(motionProfile_right_right_left, count_right_right_left);
-                		rMotionProfile->startFilling(motionProfile_right_right_right, count_right_right_right);
-                	      }
-                	  }
-                	else if(gameData == "R")
-                	  {
-                	    lMotionProfile->startFilling(motionProfile_right_right_left, count_right_right_left);
-                	    rMotionProfile->startFilling(motionProfile_right_right_right, count_right_right_right);
-                	  }
-                      }
-                  }
-                lMotionProfile->start();
-                rMotionProfile->start();
-	      }
-	    if(mode == "EMERGENCY")
-	      {
-		  if(Timer().GetFPGATimestamp() - matchStart < 4)
-		    myRobot->ArcadeDrive(-0.5, 0);
-		  else
-		    myRobot->ArcadeDrive(0, 0);
-	      }
-	  if (mode == "INTERMEDIATE" || mode == "ADVANCED")
-	    {
-	      if (!((position == "LEFT" && gameData == "R" && allowFieldCrossing == false) || (position == "RIGHT" && gameData == "L" && allowFieldCrossing == false)))
-		{
-		  if ((!isDropping && Timer ().GetFPGATimestamp () - matchStart > 4 && _lMotorFront->GetMotionProfileTopLevelBufferCount() + _rMotorFront->GetMotionProfileTopLevelBufferCount() == 0))
-		    {
-			isDropping = true;
-			droppingStart = Timer().GetFPGATimestamp();
-			_lMotorFront->Set(ctre::phoenix::motorcontrol::ControlMode::PercentOutput, -0.5);
-			_rMotorFront->Set(ctre::phoenix::motorcontrol::ControlMode::PercentOutput, 0.5);
-		    }
-		}
-	    }
-	  if(isDropping)
-	    {
-	      if(Timer().GetFPGATimestamp() - droppingStart > 5)
-		{
-		  _lMotorFront->Set(ctre::phoenix::motorcontrol::ControlMode::PercentOutput, 0);
-		  _rMotorFront->Set(ctre::phoenix::motorcontrol::ControlMode::PercentOutput, 0);
-		  _lCubeIntake->Set (1);
-		  _rCubeIntake->Set (1);
-		  isDropping = false;
-		}
-	    }
-	}
+        	int setPoint = 0;
+        	double lastStepTime = Timer().GetFPGATimestamp();
+        	while(setPoint < FIRST_MOVE){
+        		setPoint += (Timer().GetFPGATimestamp() - lastStepTime) * TARGET_REV_SEC;
+        		_lMotorFront->Set(ctre::phoenix::motorcontrol::ControlMode::Position,FIRST_MOVE);
+        		_rMotorFront->Set(ctre::phoenix::motorcontrol::ControlMode::Position,FIRST_MOVE);
+
+        		lastStepTime = Timer().GetFPGATimestamp();
+        	}
+
+        }
 
         void TestInit ()
         {
