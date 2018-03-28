@@ -78,6 +78,8 @@ class Robot : public frc::IterativeRobot
         bool isDropping;
         double droppingStart = 0;
 
+        bool firstMoveDone;
+
     private:
         //Initialize variables
         WPI_TalonSRX * _lMotorFront = new WPI_TalonSRX (lMotorFrontNum);
@@ -236,25 +238,28 @@ class Robot : public frc::IterativeRobot
             _lMotorBack->ConfigPeakCurrentLimit (MAX_CURRENT, checkTimeout);
             _rMotorBack->ConfigPeakCurrentLimit (MAX_CURRENT, checkTimeout);
 
-
+            firstMoveDone=false;
         }
 
-#define FIRST_MOVE 3000
+#define FIRST_MOVE 8000
 #define ERROR 300
 #define TICK_PER_REV 4000
-#define TARGET_REV_SEC 4000
+#define TARGET_REV_SEC 8000.0
         void AutonomousPeriodic ()
         {
-        	int setPoint = 0;
-        	double lastStepTime = Timer().GetFPGATimestamp();
-        	while(setPoint < FIRST_MOVE){
-        		setPoint += (Timer().GetFPGATimestamp() - lastStepTime) * TARGET_REV_SEC;
-        		_lMotorFront->Set(ctre::phoenix::motorcontrol::ControlMode::Position,FIRST_MOVE);
-        		_rMotorFront->Set(ctre::phoenix::motorcontrol::ControlMode::Position,FIRST_MOVE);
-
-        		lastStepTime = Timer().GetFPGATimestamp();
+        	if(!firstMoveDone){
+        		double setPoint = 0;
+        		double lastStepTime = Timer().GetFPGATimestamp();
+        		while(setPoint < FIRST_MOVE){
+        			double currStepTime = Timer().GetFPGATimestamp();
+        			setPoint += (currStepTime - lastStepTime) * TARGET_REV_SEC;
+        			lastStepTime =currStepTime;
+        			_lMotorFront->Set(ctre::phoenix::motorcontrol::ControlMode::Position,setPoint);
+        			_rMotorFront->Set(ctre::phoenix::motorcontrol::ControlMode::Position,0 - setPoint);
+        		}
+        		firstMoveDone = true;
         	}
-
+        	//DriverStation::ReportError("" + setPoint);
         }
 
         void TestInit ()
