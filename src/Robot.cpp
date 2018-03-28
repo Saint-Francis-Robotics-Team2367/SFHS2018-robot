@@ -29,6 +29,7 @@
 #include <MotionProfileExample.h>
 #include <MotionProfile.h>
 #include <stdlib.h>
+#include <AHRS.h>
 
 #define TRIGGER_DEADZONE 0.1
 
@@ -36,7 +37,7 @@ class Robot : public frc::IterativeRobot
 {
    public:
       //Motor channels
-      const int joystickNum = 0;
+      /*const int joystickNum = 0;
       const int rMotorFrontNum = 5;
       const int rMotorBackNum = 4;
       const int lMotorFrontNum = 3;
@@ -44,6 +45,17 @@ class Robot : public frc::IterativeRobot
       const int lCubeIntakeNum = 1;
       const int rCubeIntakeNum = 2;
       const int cubeManipAngleNum = 10;
+      */
+      const int joystickNum = 0;
+      const int rMotorFrontNum = 5;
+      const int rMotorBackNum = 4;
+      const int lMotorFrontNum = 2;
+      const int lMotorBackNum = 3;
+      const int lCubeIntakeNum = 11;
+      const int rCubeIntakeNum = 4;
+      const int cubeManipAngleNum = 1;
+      const int cubeManipAngleLimitNum = 1;
+
       const int lSolenoidNum = 1;
       const int rSolenoidNum = 2;
 
@@ -91,13 +103,15 @@ class Robot : public frc::IterativeRobot
       MotionProfileExample * lMotionProfile = new MotionProfileExample(*_lMotorFront);
       MotionProfileExample * rMotionProfile = new MotionProfileExample(*_rMotorFront);
       Compressor * compressor = new Compressor(0);
-      AnalogGyro * gyro = new AnalogGyro(0);
+      AHRS * gyro = new AHRS(SerialPort::kMXP);
 
       SFDrive *myRobot = new SFDrive(_lMotorFront, _rMotorFront, gyro);
       Joystick *stick = new Joystick(joystickNum);
 
+
       void RobotInit()
       {
+         DriverStation::ReportError("If you're reading this the build works");
          //used to config the motor controllers for QuadEncoders(type of encoder)
          ctre::phoenix::motorcontrol::FeedbackDevice qE = QuadEncoder;
          _lMotorFront->ConfigSelectedFeedbackSensor(qE, 0, checkTimeout);
@@ -144,7 +158,7 @@ class Robot : public frc::IterativeRobot
          compressor->Enabled();
 
          //Gyro
-         gyro->Calibrate();
+         gyro->Reset();
       }
 
       void RobotPeriodic()
@@ -232,6 +246,8 @@ class Robot : public frc::IterativeRobot
       void AutonomousInit()
       {
          DriverStation::ReportError("AutonInit Started");
+
+         gyro->Reset();
 
          position = SmartDashboard::GetString("Starting Position (LEFT, RIGHT, CENTER)", "LEFT");
          mode = SmartDashboard::GetString("Mode (NOTHING, BASIC, INTERMEDIATE, ADVANCED, EMERGENCY)", "BASIC");

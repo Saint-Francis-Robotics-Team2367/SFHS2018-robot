@@ -1,5 +1,6 @@
 #include <ctre/Phoenix.h>
 #include <AnalogGyro.h>
+#include <AHRS.h>
 
 #ifndef SRC_SFDRIVE_H_
 #define SRC_SFDRIVE_H_
@@ -14,10 +15,10 @@ class SFDrive
       bool isTurning = false;
       double turnSpeed = 0.2;
       double allowedTurningError = 1;
-      AnalogGyro * gyro;
+      AHRS * gyro;
 
    public:
-      SFDrive(WPI_TalonSRX * lMotor, WPI_TalonSRX * rMotor, AnalogGyro * _gyro);
+      SFDrive(WPI_TalonSRX * lMotor, WPI_TalonSRX * rMotor, AHRS * _gyro);
       void ArcadeDrive(double xSpeed, double zRotation);
       void GyroTurn(double degrees);
 };

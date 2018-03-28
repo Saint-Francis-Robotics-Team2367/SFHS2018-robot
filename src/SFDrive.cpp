@@ -2,10 +2,11 @@
 #include <ctre/Phoenix.h>
 #include <Timer.h>
 #include <AnalogGyro.h>
+#include <AHRS.h>
 
 using namespace frc;
 
-SFDrive::SFDrive(WPI_TalonSRX * lMotor, WPI_TalonSRX * rMotor, AnalogGyro * _gyro) :
+SFDrive::SFDrive(WPI_TalonSRX * lMotor, WPI_TalonSRX * rMotor, AHRS * _gyro) :
       m_leftMotor(lMotor), m_rightMotor(rMotor), gyro(_gyro)
 {
 }
