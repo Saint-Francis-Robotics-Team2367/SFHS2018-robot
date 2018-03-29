@@ -37,7 +37,7 @@ class Robot : public frc::IterativeRobot
 {
    public:
       //Motor channels
-      /*const int joystickNum = 0;
+      const int joystickNum = 0;
       const int rMotorFrontNum = 5;
       const int rMotorBackNum = 4;
       const int lMotorFrontNum = 3;
@@ -45,16 +45,6 @@ class Robot : public frc::IterativeRobot
       const int lCubeIntakeNum = 1;
       const int rCubeIntakeNum = 2;
       const int cubeManipAngleNum = 10;
-      */
-      const int joystickNum = 0;
-      const int rMotorFrontNum = 5;
-      const int rMotorBackNum = 4;
-      const int lMotorFrontNum = 2;
-      const int lMotorBackNum = 3;
-      const int lCubeIntakeNum = 11;
-      const int rCubeIntakeNum = 4;
-      const int cubeManipAngleNum = 1;
-      const int cubeManipAngleLimitNum = 1;
 
       const int lSolenoidNum = 1;
       const int rSolenoidNum = 2;
@@ -99,7 +89,7 @@ class Robot : public frc::IterativeRobot
       Spark * _rCubeIntake = new Spark(rCubeIntakeNum);
       Solenoid * _lRamp = new Solenoid(lSolenoidNum);
       Solenoid * _rRamp = new Solenoid(rSolenoidNum);
-      WPI_TalonSRX * _cubeManipAngle = new WPI_TalonSRX(cubeManipAngleNum);
+      Solenoid * _cubeAngleManip = new Solenoid(cubeManipAngleNum);
       MotionProfileExample * lMotionProfile = new MotionProfileExample(*_lMotorFront);
       MotionProfileExample * rMotionProfile = new MotionProfileExample(*_rMotorFront);
       Compressor * compressor = new Compressor(0);
@@ -116,9 +106,6 @@ class Robot : public frc::IterativeRobot
          ctre::phoenix::motorcontrol::FeedbackDevice qE = QuadEncoder;
          _lMotorFront->ConfigSelectedFeedbackSensor(qE, 0, checkTimeout);
          _rMotorFront->ConfigSelectedFeedbackSensor(qE, 0, checkTimeout);
-         _cubeManipAngle->ConfigSelectedFeedbackSensor(qE, 0, checkTimeout);
-         _cubeManipAngle->SetNeutralMode(Brake);
-         _cubeManipAngle->GetSensorCollection().SetQuadraturePosition(0, checkTimeout);
 
          lMotionProfile->phase = true;
 
@@ -132,13 +119,11 @@ class Robot : public frc::IterativeRobot
          _rMotorFront->SetName("Right Front");
          _lMotorBack->SetName("Left Back");
          _rMotorBack->SetName("Right Back");
-         _cubeManipAngle->SetName("Manipulator Wrist");
 
          _rMotorFront->SelectProfileSlot(0, 0);
          _rMotorBack->SelectProfileSlot(0, 0);
          _lMotorFront->SelectProfileSlot(0, 0);
          _lMotorBack->SelectProfileSlot(0, 0);
-         _cubeManipAngle->SelectProfileSlot(0, 0);
 
          //Set drive motor max voltage to 30 amps
          _lMotorFront->ConfigPeakCurrentLimit(maxDriveMotorCurrent, checkTimeout);
@@ -182,7 +167,6 @@ class Robot : public frc::IterativeRobot
          //Set encoder positions to 0
          ConfigPIDS();
          myRobot->ArcadeDrive(0.0, 0.0);
-         currentAnglePos = _cubeManipAngle->GetSelectedSensorPosition(0);
          DriverStation::ReportError("TeleopInit Completed");
       }
 
@@ -218,29 +202,14 @@ class Robot : public frc::IterativeRobot
             this->_lCubeIntake->Set(0);
             this->_rCubeIntake->Set(0);
          }
-         if (stick->GetRawButtonReleased(1)) // a button
+         if(stick->GetRawButton(5))
          {
-            currentAnglePos = TICKS_PER_DEGREE * 90;
+        	 _cubeAngleManip->Set(true);
          }
-         else if (stick->GetRawButtonReleased(4)) // y button
+         else if(stick->GetRawButton(6))
          {
-            currentAnglePos = TICKS_PER_DEGREE * 0;
+        	 _cubeAngleManip->Set(false);
          }
-         else if (stick->GetRawButtonReleased(3)) // x button
-         {
-            currentAnglePos = switchPoint;
-         }
-         else if (stick->GetRawButton(6)) // left bumper
-         {
-            _cubeManipAngle->Set(1);
-         }
-         else if (stick->GetRawButton(5)) // right bumper
-         {
-            _cubeManipAngle->Set(-1);
-         }
-         else if (!(stick->GetRawButton(5) || stick->GetRawButton(6)))
-            _cubeManipAngle->Set(0);
-         //_cubeManipAngle->Set (ctre::phoenix::motorcontrol::ControlMode::Position, currentAnglePos);
       }
 
       void AutonomousInit()
@@ -386,7 +355,7 @@ class Robot : public frc::IterativeRobot
       void AutonomousPeriodic()
       {
          if(mode != "NOTHING")
-            _cubeManipAngle->Set(-0.4);
+            _cubeAngleManip->Set(true);
       }
 
       void TestInit()
@@ -479,11 +448,6 @@ class Robot : public frc::IterativeRobot
          _rMotorBack->Config_kI(0, iConstantDrive, checkTimeout);
          _rMotorBack->Config_kD(0, dConstantDrive, checkTimeout);
          _rMotorBack->Config_kF(0, fConstantDrive, checkTimeout);
-
-         _cubeManipAngle->Config_kP(0, pConstantAngle, checkTimeout);
-         _cubeManipAngle->Config_kI(0, iConstantAngle, checkTimeout);
-         _cubeManipAngle->Config_kD(0, dConstantAngle, checkTimeout);
-         _cubeManipAngle->Config_kF(0, fConstantDrive, checkTimeout);
 
          DriverStation::ReportError("PID Config Completed");
       }
