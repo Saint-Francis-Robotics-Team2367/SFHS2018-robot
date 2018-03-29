@@ -44,10 +44,7 @@ class Robot : public frc::IterativeRobot
       const int lMotorBackNum = 2;
       const int lCubeIntakeNum = 1;
       const int rCubeIntakeNum = 2;
-      const int cubeManipAngleNum = 10;
-
-      const int lSolenoidNum = 1;
-      const int rSolenoidNum = 2;
+      const int cubeManipAngleNum = 1;
 
       //Motor tuning constants
       double scale = 1;
@@ -87,8 +84,6 @@ class Robot : public frc::IterativeRobot
       WPI_TalonSRX * _rMotorBack = new WPI_TalonSRX(rMotorBackNum);
       Spark * _lCubeIntake = new Spark(lCubeIntakeNum);
       Spark * _rCubeIntake = new Spark(rCubeIntakeNum);
-      Solenoid * _lRamp = new Solenoid(lSolenoidNum);
-      Solenoid * _rRamp = new Solenoid(rSolenoidNum);
       Solenoid * _cubeAngleManip = new Solenoid(cubeManipAngleNum);
       MotionProfileExample * lMotionProfile = new MotionProfileExample(*_lMotorFront);
       MotionProfileExample * rMotionProfile = new MotionProfileExample(*_rMotorFront);
@@ -174,16 +169,6 @@ class Robot : public frc::IterativeRobot
       {
          myRobot->ArcadeDrive(scale * stick->GetRawAxis(1), -(stick->GetRawAxis(4) > 0 ? 1 : -1) * stick->GetRawAxis(4) * stick->GetRawAxis(4));
 
-         if (stick->GetRawButton(7))
-         {
-            _lRamp->Set(true);
-            _rRamp->Set(false);
-         }
-         else
-         {
-            _lRamp->Set(false);
-            _rRamp->Set(true);
-         }
          if (stick->GetRawButton(2)) //b
          {
             this->_lCubeIntake->Set(1);
@@ -469,7 +454,7 @@ class Robot : public frc::IterativeRobot
          int pauseStart = Timer().GetFPGATimestamp();
          while(Timer().GetFPGATimestamp() - pauseStart < seconds)
          {
-            true;
+
          }
       }
 
@@ -477,7 +462,7 @@ class Robot : public frc::IterativeRobot
       {
          while(!(_lMotorFront->Get() == 0 && _rMotorFront->Get() == 0 && _lMotorFront->GetMotionProfileTopLevelBufferCount() == 0 && _rMotorFront->GetMotionProfileTopLevelBufferCount() == 0))
          {
-            true;
+
          }
       }
 };
