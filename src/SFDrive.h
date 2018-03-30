@@ -13,9 +13,6 @@ private: //MEMBER VARIABLES
         IterativeRobot * m_robot;
         AHRS * m_gyro;
         double m_deadband = 0.08;
-        double m_lastPIDTime = 0;
-        int m_PIDStepTime = 10 ^ 8;
-        double m_PIDStepSize = 500;
 
 public:
         SFDrive(WPI_TalonSRX * lMotor, WPI_TalonSRX * rMotor, IterativeRobot * bot, AHRS * gyro);
