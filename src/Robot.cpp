@@ -66,7 +66,7 @@ class Robot : public frc::IterativeRobot
       double lastTestPacket = 0;
       double switchPoint = 45 * TICKS_PER_DEGREE; //TODO
       //Starting Data
-      std::string position = "LEFT";
+      std::string position = "RIGHT";
       std::string gameData = "";
       std::string mode = "BASIC";
       bool allowFieldCrossing = false;
@@ -199,7 +199,7 @@ class Robot : public frc::IterativeRobot
       {
          DriverStation::ReportError("AutonInit Started");
 
-         position = SmartDashboard::GetString("Starting Position (LEFT, RIGHT, CENTER)", "LEFT");
+         position = SmartDashboard::GetString("Starting Position (LEFT, RIGHT, CENTER)", "RIGHT");
          mode = SmartDashboard::GetString("Mode (NOTHING, BASIC, INTERMEDIATE, ADVANCED, EMERGENCY)", "BASIC");
          allowFieldCrossing = SmartDashboard::GetBoolean("Allow Field Crossing?", false);
 
@@ -310,22 +310,9 @@ class Robot : public frc::IterativeRobot
             {
                if ((!isDropping && Timer().GetFPGATimestamp() - matchStart > 4 && _lMotorFront->GetMotionProfileTopLevelBufferCount() + _rMotorFront->GetMotionProfileTopLevelBufferCount() == 0))
                {
-                  isDropping = true;
-                  droppingStart = Timer().GetFPGATimestamp();
-                  _lMotorFront->Set(ctre::phoenix::motorcontrol::ControlMode::PercentOutput, -0.5);
-                  _rMotorFront->Set(ctre::phoenix::motorcontrol::ControlMode::PercentOutput, 0.5);
+                  _lCubeIntake->Set(1);
+                  _rCubeIntake->Set(1);
                }
-            }
-         }
-         if (isDropping)
-         {
-            if (Timer().GetFPGATimestamp() - droppingStart > 5)
-            {
-               _lMotorFront->Set(ctre::phoenix::motorcontrol::ControlMode::PercentOutput, 0);
-               _rMotorFront->Set(ctre::phoenix::motorcontrol::ControlMode::PercentOutput, 0);
-               _lCubeIntake->Set(1);
-               _rCubeIntake->Set(1);
-               isDropping = false;
             }
          }
       }
