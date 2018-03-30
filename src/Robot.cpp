@@ -125,14 +125,14 @@ class Robot : public frc::IterativeRobot
 
          //Shuffleboard
          CameraServer::GetInstance()->StartAutomaticCapture();
-         gameData = "";
-         position = "";
          SmartDashboard::PutString("Mode (NOTHING, BASIC, INTERMEDIATE, ADVANCED, EMERGENCY)", mode);
          SmartDashboard::PutBoolean("Allow Field Crossing?", false);
          SmartDashboard::PutString("Starting Position (LEFT, RIGHT, CENTER)", position);
 
          //Pneumatics
          compressor->Enabled();
+         _cubeAngleManipOpen->Set(true);
+         _cubeAngleManipClose->Set(false);
       }
 
       void RobotPeriodic()
@@ -229,6 +229,8 @@ class Robot : public frc::IterativeRobot
 
       void AutonomousPeriodic()
       {
+         _cubeAngleManipOpen->Set(true);
+         _cubeAngleManipClose->Set(false);
          if (!autonHasRun)
          {
             if (gameData == "")
