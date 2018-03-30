@@ -9,9 +9,6 @@ private: //MEMBER VARIABLES
         WPI_TalonSRX * m_leftMotor;
         WPI_TalonSRX * m_rightMotor;
         double m_deadband = 0.08;
-        double m_lastPIDTime = 0;
-        int m_PIDStepTime = 10 ^ 8;
-        double m_PIDStepSize = 500;
 
 public:
         SFDrive(WPI_TalonSRX * lMotor, WPI_TalonSRX * rMotor);
