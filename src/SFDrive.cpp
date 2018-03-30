@@ -1,11 +1,12 @@
 #include <SFDrive.h>
 #include <ctre/Phoenix.h>
 #include <Timer.h>
+#include <IterativeRobot.h>
 
 using namespace frc;
 
-SFDrive::SFDrive(WPI_TalonSRX * lMotor, WPI_TalonSRX * rMotor) :
-      m_leftMotor(lMotor), m_rightMotor(rMotor)
+SFDrive::SFDrive(WPI_TalonSRX * lMotor, WPI_TalonSRX * rMotor, IterativeRobot * bot) :
+      m_leftMotor(lMotor), m_rightMotor(rMotor), m_robot(bot)
 {
 }
 
@@ -55,16 +56,23 @@ void SFDrive::ArcadeDrive(double xSpeed, double zRotation)
 
 #define TARGET_REV_SEC 8192
 
-void SFDrive::PIDDrive(double _ticks)
+void SFDrive::PIDDrive(double leftTicks, double rightTicks)
 {
-   double setPoint = 0;
+   double leftSetPoint = 0;
+   double rightSetPoint = 0;
    double lastStepTime = Timer().GetFPGATimestamp();
-   while (setPoint < _ticks)
+   while (m_robot->IsAutonomous() && leftSetPoint < leftTicks && rightSetPoint < rightTicks)
    {
       double currStepTime = Timer().GetFPGATimestamp();
-      setPoint += (currStepTime - lastStepTime) * TARGET_REV_SEC;
+      leftSetPoint += (currStepTime - lastStepTime) * TARGET_REV_SEC;
+      rightSetPoint += (currStepTime - lastStepTime) * TARGET_REV_SEC;
       lastStepTime = currStepTime;
-      m_leftMotor->Set(ctre::phoenix::motorcontrol::ControlMode::Position, setPoint);
-      m_rightMotor->Set(ctre::phoenix::motorcontrol::ControlMode::Position, 0 - setPoint);
+      m_leftMotor->Set(ctre::phoenix::motorcontrol::ControlMode::Position, leftSetPoint);
+      m_rightMotor->Set(ctre::phoenix::motorcontrol::ControlMode::Position, 0 - rightSetPoint);
    }
+}
+
+void SFDrive::GyroTurn(double degreesClockwise)
+{
+   return;
 }
