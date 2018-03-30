@@ -85,10 +85,10 @@ void SFDrive::GyroTurn(double degreesClockwise)
 {
    double startAngle = m_gyro->GetAngle();
 
-   for(int i = 0; i < NUM_CORRECTIONS; i++)
+   for (int i = 0; i < NUM_CORRECTIONS; i++)
    {
       degreesClockwise = m_gyro->GetAngle() - startAngle;
-      if(degreesClockwise < 0)
+      if (degreesClockwise < 0)
       {
          PIDDrive(0, ((-degreesClockwise) / 360.) * PI * ROBOT_DIAMETER * TICKS_PER_INCH);
       }
@@ -102,8 +102,8 @@ void SFDrive::GyroTurn(double degreesClockwise)
 void SFDrive::DriveIntoWall(double timeOut) //I understand the concept of this, but don't know how to implement it and don't have enough time to figure it out
 {
    double timeStart = Timer().GetFPGATimestamp();
-   while(Timer().GetFPGATimestamp() - timeOut < timeStart)
+   while (Timer().GetFPGATimestamp() - timeOut < timeStart)
    {
-      ArcadeDrive(1,0); //this is terrifying. Let's never use this.
+      ArcadeDrive(1, 0); //this is terrifying. Let's never use this.
    }
 }

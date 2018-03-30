@@ -205,6 +205,37 @@ class Robot : public frc::IterativeRobot
       void AutonomousInit()
       {
          ConfigPIDS();
+
+         DriverStation::ReportError("AutonInit Started");
+
+         position = SmartDashboard::GetString("Starting Position (LEFT, RIGHT, CENTER)", "LEFT");
+         mode = SmartDashboard::GetString("Mode (NOTHING, BASIC, INTERMEDIATE, ADVANCED, EMERGENCY)", "BASIC");
+         allowFieldCrossing = SmartDashboard::GetBoolean("Allow Field Crossing?", false);
+
+         if (mode != "NOTHING" && mode != "BASIC" && mode != "INTERMEDIATE" && mode != "ADVANCED" && mode != "EMERGENCY")
+         {
+            DriverStation::ReportError("Error setting auton mode! Defaulting to BASIC");
+            mode = "BASIC";
+         }
+
+         if (position != "LEFT" && position != "CENTER" && position != "RIGHT")
+         {
+            DriverStation::ReportError("Error setting position! Defaulting to LEFT");
+            position = "LEFT";
+         }
+
+         if (mode != "NOTHING" && mode != "EMERGENCY")
+         {
+            ConfigPIDS();
+            _lMotorFront->Set(ctre::phoenix::motorcontrol::ControlMode::MotionProfile, 1);
+            _rMotorFront->Set(ctre::phoenix::motorcontrol::ControlMode::MotionProfile, 1);
+         }
+         else
+            autonHasRun = true;
+
+         matchStart = Timer().GetFPGATimestamp();
+         DriverStation::ReportError("AutonInit Completed. Mode: " + mode + " Starting Position: " + position + " Cross field? " + (allowFieldCrossing ? "True" : "False") + " Switch side: " + gameData);
+
          _lMotorFront->ConfigPeakCurrentLimit(MAX_CURRENT, checkTimeout);
          _rMotorFront->ConfigPeakCurrentLimit(MAX_CURRENT, checkTimeout);
          _lMotorBack->ConfigPeakCurrentLimit(MAX_CURRENT, checkTimeout);
@@ -213,29 +244,98 @@ class Robot : public frc::IterativeRobot
          firstMoveDone = false;
       }
 
-#define FIRST_MOVE 8000
-#define ERROR 300
-#define TICK_PER_REV 4000
-#define TARGET_REV_SEC 8000.0
       void AutonomousPeriodic()
       {
-         if (!firstMoveDone)
+         _cubeAngleManipOpen->Set(true);
+         _cubeAngleManipClose->Set(false);
+         if (!autonHasRun)
          {
-            double setPoint = 0;
-            double lastStepTime = Timer().GetFPGATimestamp();
-            while (setPoint < FIRST_MOVE)
+            if (gameData == "")
+               return;
+            autonHasRun = true;
+            if (mode == "BASIC" || mode == "INTERMEDIATE" || mode == "ADVANCED")
             {
-               double currStepTime = Timer().GetFPGATimestamp();
-               setPoint += (currStepTime - lastStepTime) * TARGET_REV_SEC;
-               lastStepTime = currStepTime;
-               _lMotorFront->Set(ctre::phoenix::motorcontrol::ControlMode::Position, setPoint);
-               _rMotorFront->Set(ctre::phoenix::motorcontrol::ControlMode::Position, 0 - setPoint);
-            }
-            firstMoveDone = true;
-         }
-         //DriverStation::ReportError("" + setPoint);
-      }
+               if (position == "LEFT")
+               {
+                  if (gameData == "L")
+                  {
 
+                  }
+                  else if (gameData == "R")
+                  {
+                     if (allowFieldCrossing)
+                     {
+
+                     }
+                     else
+                     {
+
+                     }
+                  }
+               }
+               else if (position == "CENTER")
+               {
+                  if (gameData == "L")
+                  {
+
+                  }
+                  else if (gameData == "R")
+                  {
+
+                  }
+               }
+               else if (position == "RIGHT")
+               {
+                  if (gameData == "L")
+                  {
+                     if (allowFieldCrossing)
+                     {
+
+                     }
+                     else
+                     {
+
+                     }
+                  }
+                  else if (gameData == "R")
+                  {
+
+                  }
+               }
+            }
+         }
+         if (mode == "EMERGENCY")
+         {
+            if (Timer().GetFPGATimestamp() - matchStart < 4)
+               myRobot->ArcadeDrive(0.5, 0);
+            else
+               myRobot->ArcadeDrive(0, 0);
+         }
+      }
+      /*
+       #define FIRST_MOVE 8000
+       #define ERROR 300
+       #define TICK_PER_REV 4000
+       #define TARGET_REV_SEC 8000.0
+       void AutonomousPeriodic()
+       {
+       if (!firstMoveDone)
+       {
+       double setPoint = 0;
+       double lastStepTime = Timer().GetFPGATimestamp();
+       while (setPoint < FIRST_MOVE)
+       {
+       double currStepTime = Timer().GetFPGATimestamp();
+       setPoint += (currStepTime - lastStepTime) * TARGET_REV_SEC;
+       lastStepTime = currStepTime;
+       _lMotorFront->Set(ctre::phoenix::motorcontrol::ControlMode::Position, setPoint);
+       _rMotorFront->Set(ctre::phoenix::motorcontrol::ControlMode::Position, 0 - setPoint);
+       }
+       firstMoveDone = true;
+       }
+       //DriverStation::ReportError("" + setPoint);
+       }
+       */
       void TestInit()
       {
          DriverStation::ReportError("TestInit Started");
