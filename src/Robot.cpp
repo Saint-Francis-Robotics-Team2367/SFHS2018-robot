@@ -44,7 +44,8 @@ class Robot : public frc::IterativeRobot
       const int lMotorBackNum = 2;
       const int lCubeIntakeNum = 1;
       const int rCubeIntakeNum = 2;
-      const int cubeManipAngleNum = 1;
+      const int cubeManipAngleOpenNum = 1;
+      const int cubeManipAngleCloseNum = 0;
 
       //Motor tuning constants
       double scale = 1;
@@ -84,7 +85,8 @@ class Robot : public frc::IterativeRobot
       WPI_TalonSRX * _rMotorBack = new WPI_TalonSRX(rMotorBackNum);
       Spark * _lCubeIntake = new Spark(lCubeIntakeNum);
       Spark * _rCubeIntake = new Spark(rCubeIntakeNum);
-      Solenoid * _cubeAngleManip = new Solenoid(cubeManipAngleNum);
+      Solenoid * _cubeAngleManipOpen = new Solenoid(cubeManipAngleOpenNum);
+      Solenoid * _cubeAngleManipClose = new Solenoid(cubeManipAngleCloseNum);
       MotionProfileExample * lMotionProfile = new MotionProfileExample(*_lMotorFront);
       MotionProfileExample * rMotionProfile = new MotionProfileExample(*_rMotorFront);
       Compressor * compressor = new Compressor(0);
@@ -96,7 +98,7 @@ class Robot : public frc::IterativeRobot
 
       void RobotInit()
       {
-         DriverStation::ReportError("If you're reading this the build works");
+         DriverStation::ReportError("2");
          //used to config the motor controllers for QuadEncoders(type of encoder)
          ctre::phoenix::motorcontrol::FeedbackDevice qE = QuadEncoder;
          _lMotorFront->ConfigSelectedFeedbackSensor(qE, 0, checkTimeout);
@@ -137,6 +139,9 @@ class Robot : public frc::IterativeRobot
          //Pneumatics
          compressor->Enabled();
 
+    	 _cubeAngleManipOpen->Set(true);
+    	 _cubeAngleManipClose->Set(false);
+
          //Gyro
          gyro->Reset();
       }
@@ -153,7 +158,6 @@ class Robot : public frc::IterativeRobot
                SmartDashboard::PutString("Starting Position (LEFT, RIGHT, CENTER)", position);
             lastPacket = Timer().GetFPGATimestamp();
          }
-
       }
 
       void TeleopInit()
@@ -162,6 +166,7 @@ class Robot : public frc::IterativeRobot
          //Set encoder positions to 0
          ConfigPIDS();
          myRobot->ArcadeDrive(0.0, 0.0);
+         myRobot->overrideAuton = true;
          DriverStation::ReportError("TeleopInit Completed");
       }
 
@@ -169,31 +174,33 @@ class Robot : public frc::IterativeRobot
       {
          myRobot->ArcadeDrive(scale * stick->GetRawAxis(1), -(stick->GetRawAxis(4) > 0 ? 1 : -1) * stick->GetRawAxis(4) * stick->GetRawAxis(4));
 
+         if (stick->GetRawAxis(3) > TRIGGER_DEADZONE) //right trigger
+         {
+            this->_lCubeIntake->Set(-stick->GetRawAxis(3));
+         }
+         if (stick->GetRawAxis(2) > TRIGGER_DEADZONE) //left trigger
+         {
+            this->_rCubeIntake->Set(-stick->GetRawAxis(2));
+         }
+         if(stick->GetRawButton(5))
+         {
+        	 _cubeAngleManipOpen->Set(true);
+        	 _cubeAngleManipClose->Set(false);
+         }
+         else if(stick->GetRawButton(6))
+         {
+        	 _cubeAngleManipOpen->Set(false);
+        	 _cubeAngleManipClose->Set(true);
+         }
          if (stick->GetRawButton(2)) //b
          {
             this->_lCubeIntake->Set(1);
             this->_rCubeIntake->Set(1);
          }
-         else if (stick->GetRawAxis(3) > TRIGGER_DEADZONE) //right trigger
-         {
-            this->_lCubeIntake->Set(-stick->GetRawAxis(3));
-         }
-         else if (stick->GetRawAxis(2) > TRIGGER_DEADZONE) //left trigger
-         {
-            this->_rCubeIntake->Set(-stick->GetRawAxis(2));
-         }
-         else
+         if(!(stick->GetRawAxis(3) > TRIGGER_DEADZONE || stick->GetRawAxis(2) > TRIGGER_DEADZONE || stick->GetRawButton(2)))
          {
             this->_lCubeIntake->Set(0);
             this->_rCubeIntake->Set(0);
-         }
-         if(stick->GetRawButton(5))
-         {
-        	 _cubeAngleManip->Set(true);
-         }
-         else if(stick->GetRawButton(6))
-         {
-        	 _cubeAngleManip->Set(false);
          }
       }
 
@@ -219,7 +226,7 @@ class Robot : public frc::IterativeRobot
             position = "LEFT";
          }
 
-         if (mode != "NOTHING" && mode != "EMERGENCY")
+         if (mode != "NOTHING")
          {
             ConfigPIDS();
             _lMotorFront->Set(ctre::phoenix::motorcontrol::ControlMode::MotionProfile, 1);
@@ -231,10 +238,17 @@ class Robot : public frc::IterativeRobot
          while (gameData == "")
             gameData = frc::DriverStation::GetInstance().GetGameSpecificMessage().substr(0, 1);
 
-         DriverStation::ReportError("Mode: " + mode);
-         DriverStation::ReportError("Starting Position: " + position);
-         DriverStation::ReportError("Switch side: " + gameData == "L" ? "LEFT" : "RIGHT");
+         DriverStation::ReportError("Mode " + mode);
+         DriverStation::ReportError("Starting Position " + position);
+         DriverStation::ReportError("Switch side " + gameData == "L" ? "LEFT" : "RIGHT");
          DriverStation::ReportError("Cross field? " + allowFieldCrossing ? "TRUE" : "FALSE");
+
+         if(mode == "EMERGENCY")
+         {
+        	 lMotionProfile->startFilling(motionProfile_sides_1_left, count_sides_1_left);
+        	 rMotionProfile->startFilling(motionProfile_sides_1_right, count_sides_1_right);
+        	 return;
+         }
 
          if (mode == "BASIC" || mode == "INTERMEDIATE" || mode == "ADVANCED")
          {
@@ -248,8 +262,10 @@ class Robot : public frc::IterativeRobot
                   myRobot->GyroTurn(90);
                   lMotionProfile->startFilling(motionProfile_sides_2_left, count_sides_2_left);
                   rMotionProfile->startFilling(motionProfile_sides_2_right, count_sides_2_right);
+                  _lMotorFront->Set(ctre::phoenix::motorcontrol::ControlMode::MotionProfile, 1);
+                  _rMotorFront->Set(ctre::phoenix::motorcontrol::ControlMode::MotionProfile, 1);
                }
-               else //Moves to right switch from right side
+               else //Moves to right switch from left side
                {
                   lMotionProfile->startFilling(motionProfile_cross_1_left, count_cross_1_left);
                   rMotionProfile->startFilling(motionProfile_cross_1_right, count_cross_1_right);
@@ -257,14 +273,20 @@ class Robot : public frc::IterativeRobot
                   myRobot->GyroTurn(90);
                   lMotionProfile->startFilling(motionProfile_cross_2_left, count_cross_2_left);
                   rMotionProfile->startFilling(motionProfile_cross_2_right, count_cross_2_right);
+                  _lMotorFront->Set(ctre::phoenix::motorcontrol::ControlMode::MotionProfile, 1);
+                  _rMotorFront->Set(ctre::phoenix::motorcontrol::ControlMode::MotionProfile, 1);
                   WaitUntilMotionProfileDone();
                   myRobot->GyroTurn(90);
                   lMotionProfile->startFilling(motionProfile_cross_3_left, count_cross_3_left);
                   rMotionProfile->startFilling(motionProfile_cross_3_right, count_cross_3_right);
+                  _lMotorFront->Set(ctre::phoenix::motorcontrol::ControlMode::MotionProfile, 1);
+                  _rMotorFront->Set(ctre::phoenix::motorcontrol::ControlMode::MotionProfile, 1);
                   WaitUntilMotionProfileDone();
                   myRobot->GyroTurn(90);
                   lMotionProfile->startFilling(motionProfile_cross_4_left, count_cross_4_left);
                   rMotionProfile->startFilling(motionProfile_cross_4_right, count_cross_4_right);
+                  _lMotorFront->Set(ctre::phoenix::motorcontrol::ControlMode::MotionProfile, 1);
+                  _rMotorFront->Set(ctre::phoenix::motorcontrol::ControlMode::MotionProfile, 1);
                }
             }
             if (position == "CENTER")
@@ -273,12 +295,18 @@ class Robot : public frc::IterativeRobot
                {
                   lMotionProfile->startFilling(motionProfile_center_1_left, count_center_1_left);
                   rMotionProfile->startFilling(motionProfile_center_1_right, count_center_1_right);
+                  WaitUntilMotionProfileDone();
                   myRobot->GyroTurn(90);
                   lMotionProfile->startFilling(motionProfile_center_2_left, count_center_2_left);
                   rMotionProfile->startFilling(motionProfile_center_2_right, count_center_2_right);
+                  _lMotorFront->Set(ctre::phoenix::motorcontrol::ControlMode::MotionProfile, 1);
+                  _rMotorFront->Set(ctre::phoenix::motorcontrol::ControlMode::MotionProfile, 1);
+                  WaitUntilMotionProfileDone();
                   myRobot->GyroTurn(-90);
                   lMotionProfile->startFilling(motionProfile_center_3_left, count_center_3_left);
                   rMotionProfile->startFilling(motionProfile_center_3_right, count_center_3_right);
+                  _lMotorFront->Set(ctre::phoenix::motorcontrol::ControlMode::MotionProfile, 1);
+                  _rMotorFront->Set(ctre::phoenix::motorcontrol::ControlMode::MotionProfile, 1);
                }
                else if (gameData == "R") //Moves to right switch from center
                {
@@ -287,9 +315,14 @@ class Robot : public frc::IterativeRobot
                   myRobot->GyroTurn(-90);
                   lMotionProfile->startFilling(motionProfile_center_2_left, count_center_2_left);
                   rMotionProfile->startFilling(motionProfile_center_2_right, count_center_2_right);
+                  _lMotorFront->Set(ctre::phoenix::motorcontrol::ControlMode::MotionProfile, 1);
+                  _rMotorFront->Set(ctre::phoenix::motorcontrol::ControlMode::MotionProfile, 1);
+                  WaitUntilMotionProfileDone();
                   myRobot->GyroTurn(90);
                   lMotionProfile->startFilling(motionProfile_center_3_left, count_center_3_left);
                   rMotionProfile->startFilling(motionProfile_center_3_right, count_center_3_right);
+                  _lMotorFront->Set(ctre::phoenix::motorcontrol::ControlMode::MotionProfile, 1);
+                  _rMotorFront->Set(ctre::phoenix::motorcontrol::ControlMode::MotionProfile, 1);
                }
             }
             if (position == "RIGHT")
@@ -298,10 +331,13 @@ class Robot : public frc::IterativeRobot
                {
                   lMotionProfile->startFilling(motionProfile_sides_1_left, count_sides_1_left);
                   rMotionProfile->startFilling(motionProfile_sides_1_right, count_sides_1_right);
+                  Wait(1);
                   WaitUntilMotionProfileDone();
                   myRobot->GyroTurn(-90);
                   lMotionProfile->startFilling(motionProfile_sides_2_left, count_sides_2_left);
                   rMotionProfile->startFilling(motionProfile_sides_2_right, count_sides_2_right);
+                  _lMotorFront->Set(ctre::phoenix::motorcontrol::ControlMode::MotionProfile, 1);
+                  _rMotorFront->Set(ctre::phoenix::motorcontrol::ControlMode::MotionProfile, 1);
                }
                else //Moves to left switch from right side
                {
@@ -311,14 +347,20 @@ class Robot : public frc::IterativeRobot
                   myRobot->GyroTurn(-90);
                   lMotionProfile->startFilling(motionProfile_cross_2_left, count_cross_2_left);
                   rMotionProfile->startFilling(motionProfile_cross_2_right, count_cross_2_right);
+                  _lMotorFront->Set(ctre::phoenix::motorcontrol::ControlMode::MotionProfile, 1);
+                  _rMotorFront->Set(ctre::phoenix::motorcontrol::ControlMode::MotionProfile, 1);
                   WaitUntilMotionProfileDone();
                   myRobot->GyroTurn(-90);
                   lMotionProfile->startFilling(motionProfile_cross_3_left, count_cross_3_left);
                   rMotionProfile->startFilling(motionProfile_cross_3_right, count_cross_3_right);
+                  _lMotorFront->Set(ctre::phoenix::motorcontrol::ControlMode::MotionProfile, 1);
+                  _rMotorFront->Set(ctre::phoenix::motorcontrol::ControlMode::MotionProfile, 1);
                   WaitUntilMotionProfileDone();
                   myRobot->GyroTurn(-90);
                   lMotionProfile->startFilling(motionProfile_cross_4_left, count_cross_4_left);
                   rMotionProfile->startFilling(motionProfile_cross_4_right, count_cross_4_right);
+                  _lMotorFront->Set(ctre::phoenix::motorcontrol::ControlMode::MotionProfile, 1);
+                  _rMotorFront->Set(ctre::phoenix::motorcontrol::ControlMode::MotionProfile, 1);
                }
             }
          }
@@ -327,8 +369,12 @@ class Robot : public frc::IterativeRobot
 
          if (mode == "INTERMEDIATE" || mode == "ADVANCED") //Shoots cube if applicable
          {
-            _rCubeIntake->Set(1);
-            _lCubeIntake->Set(1);
+        	 if(!((position == "RIGHT" && gameData == "L" && !allowFieldCrossing) || (position == "LEFT" && gameData == "R" && !allowFieldCrossing)))
+        	 {
+        		 DriverStation::ReportError("Shooting...");
+        		_rCubeIntake->Set(1);
+            	_lCubeIntake->Set(1);
+        	 }
          }
 
          if (mode == "ADVANCED") //2nd cube of 2 cube auto
@@ -340,7 +386,11 @@ class Robot : public frc::IterativeRobot
       void AutonomousPeriodic()
       {
          if(mode != "NOTHING")
-            _cubeAngleManip->Set(true);
+         {
+            _cubeAngleManipOpen->Set(true);
+         	_cubeAngleManipClose->Set(false);
+         }
+         //DriverStation::ReportError(std::to_string(gyro->GetAngle()));
       }
 
       void TestInit()
@@ -360,6 +410,8 @@ class Robot : public frc::IterativeRobot
           SmartDashboard::PutNumber ("Current Position - Left", 0);
           SmartDashboard::PutNumber ("Current Position - Angle", MAX_ANGLE_TICKS);
           */
+         myRobot->overrideAuton = false;
+         myRobot->GyroTurn(-90);
          DriverStation::ReportError("TestInit Completed");
       }
 
@@ -454,15 +506,15 @@ class Robot : public frc::IterativeRobot
          int pauseStart = Timer().GetFPGATimestamp();
          while(Timer().GetFPGATimestamp() - pauseStart < seconds)
          {
-
+        	 DriverStation::ReportError("PAUSE");
          }
       }
 
       void WaitUntilMotionProfileDone()
       {
-         while(!(_lMotorFront->Get() == 0 && _rMotorFront->Get() == 0 && _lMotorFront->GetMotionProfileTopLevelBufferCount() == 0 && _rMotorFront->GetMotionProfileTopLevelBufferCount() == 0))
+         while(!(std::fabs(_lMotorFront->Get()) <= 0.01 && std::fabs(_rMotorFront->Get()) <= 0.01 && _lMotorFront->GetMotionProfileTopLevelBufferCount() == 0 && _rMotorFront->GetMotionProfileTopLevelBufferCount() == 0))
          {
-
+        	 DriverStation::ReportError("Waiting for motion profile to complete...");
          }
       }
 };

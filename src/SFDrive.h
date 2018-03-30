@@ -7,7 +7,7 @@
 
 class SFDrive
 {
-   private:
+   public:
       //MEMBER VARIABLES
       WPI_TalonSRX * m_leftMotor;
       WPI_TalonSRX * m_rightMotor;
@@ -16,6 +16,7 @@ class SFDrive
       double turnSpeed = 0.2;
       double allowedTurningError = 1;
       AHRS * gyro;
+      bool overrideAuton = false;
 
    public:
       SFDrive(WPI_TalonSRX * lMotor, WPI_TalonSRX * rMotor, AHRS * _gyro);
