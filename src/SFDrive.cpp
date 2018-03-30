@@ -76,21 +76,25 @@ void SFDrive::PIDDrive(double leftTicks, double rightTicks)
    }
 }
 
-#define WHEEL_RADIUS 6
-#define ROBOT_RADIUS 12
+#define TICKS_PER_INCH 217.3
+#define ROBOT_DIAMETER 24
 #define NUM_CORRECTIONS 2
+#define PI 3.14159265
 
 void SFDrive::GyroTurn(double degreesClockwise)
 {
+   double startAngle = m_gyro->GetAngle();
+
    for(int i = 0; i < NUM_CORRECTIONS; i++)
    {
+      degreesClockwise = m_gyro->GetAngle() - startAngle;
       if(degreesClockwise < 0)
       {
-
+         PIDDrive(0, ((-degreesClockwise) / 360.) * PI * ROBOT_DIAMETER * TICKS_PER_INCH);
       }
       else
       {
-
+         PIDDrive((degreesClockwise / 360.) * PI * ROBOT_DIAMETER * TICKS_PER_INCH, 0);
       }
    }
 }

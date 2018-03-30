@@ -28,6 +28,7 @@
 #include <CameraServer.h>
 #include <MotionProfileExample.h>
 #include <MotionProfile.h>
+#include <AHRS.h>
 
 #define TRIGGER_DEADZONE 0.1
 
@@ -91,8 +92,9 @@ class Robot : public frc::IterativeRobot
       MotionProfileExample * lMotionProfile = new MotionProfileExample(*_lMotorFront);
       MotionProfileExample * rMotionProfile = new MotionProfileExample(*_rMotorFront);
       Compressor * compressor = new Compressor(0);
+      AHRS * gyro = new AHRS(SerialPort::kMXP);
 
-      SFDrive *myRobot = new SFDrive(_lMotorFront, _rMotorFront, this);
+      SFDrive *myRobot = new SFDrive(_lMotorFront, _rMotorFront, this, gyro);
       Joystick *stick = new Joystick(joystickNum);
 
       void RobotInit()
