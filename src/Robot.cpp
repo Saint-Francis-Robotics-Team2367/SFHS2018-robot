@@ -68,7 +68,7 @@ class Robot : public frc::IterativeRobot
       //Starting Data
       std::string position = "RIGHT";
       std::string gameData = "";
-      std::string mode = "BASIC";
+      std::string mode = "INTERMEDIATE";
       bool allowFieldCrossing = false;
       bool autonHasRun = false;
       double matchStart;
@@ -137,8 +137,6 @@ class Robot : public frc::IterativeRobot
 
       void RobotPeriodic()
       {
-         if (gameData == "")
-            gameData = frc::DriverStation::GetInstance().GetGameSpecificMessage().substr(0, 1);
          if (lastPacket + .5 < Timer().GetFPGATimestamp())
          {
             if (!SmartDashboard::ContainsKey("Mode (NOTHING, BASIC, INTERMEDIATE, ADVANCED, EMERGENCY)"))
@@ -200,19 +198,19 @@ class Robot : public frc::IterativeRobot
          DriverStation::ReportError("AutonInit Started");
 
          position = SmartDashboard::GetString("Starting Position (LEFT, RIGHT, CENTER)", "RIGHT");
-         mode = SmartDashboard::GetString("Mode (NOTHING, BASIC, INTERMEDIATE, ADVANCED, EMERGENCY)", "BASIC");
+         mode = SmartDashboard::GetString("Mode (NOTHING, BASIC, INTERMEDIATE, ADVANCED, EMERGENCY)", "INTERMEDIATE");
          allowFieldCrossing = SmartDashboard::GetBoolean("Allow Field Crossing?", false);
 
          if (mode != "NOTHING" && mode != "BASIC" && mode != "INTERMEDIATE" && mode != "ADVANCED" && mode != "EMERGENCY")
          {
-            DriverStation::ReportError("Error setting auton mode! Defaulting to BASIC");
-            mode = "BASIC";
+            DriverStation::ReportError("Error setting auton mode! Defaulting to INTERMEDIATE");
+            mode = "INTERMEDIATE";
          }
 
          if (position != "LEFT" && position != "CENTER" && position != "RIGHT")
          {
-            DriverStation::ReportError("Error setting position! Defaulting to LEFT");
-            position = "LEFT";
+            DriverStation::ReportError("Error setting position! Defaulting to RIGHT");
+            position = "RIGHT";
          }
 
          if (mode != "NOTHING" && mode != "EMERGENCY")
@@ -224,6 +222,12 @@ class Robot : public frc::IterativeRobot
          else
             autonHasRun = true;
          matchStart = Timer().GetFPGATimestamp();
+
+         DriverStation::ReportError("AutonInit Retreiving game data...");
+
+         while (gameData == "" && IsAutonomous())
+             gameData = frc::DriverStation::GetInstance().GetGameSpecificMessage().substr(0, 1);
+
          DriverStation::ReportError("AutonInit Completed. Mode: " + mode + " Starting Position: " + position + " Cross field? " + (allowFieldCrossing ? "True" : "False") + " Switch side: " + gameData);
       }
 
