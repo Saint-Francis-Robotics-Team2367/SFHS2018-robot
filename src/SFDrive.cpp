@@ -2,11 +2,12 @@
 #include <ctre/Phoenix.h>
 #include <Timer.h>
 #include <IterativeRobot.h>
+#include <AHRS.h>
 
 using namespace frc;
 
-SFDrive::SFDrive(WPI_TalonSRX * lMotor, WPI_TalonSRX * rMotor, IterativeRobot * bot) :
-      m_leftMotor(lMotor), m_rightMotor(rMotor), m_robot(bot)
+SFDrive::SFDrive(WPI_TalonSRX * lMotor, WPI_TalonSRX * rMotor, IterativeRobot * bot, AHRS * gyro) :
+      m_leftMotor(lMotor), m_rightMotor(rMotor), m_robot(bot), m_gyro(gyro)
 {
 }
 
@@ -55,13 +56,16 @@ void SFDrive::ArcadeDrive(double xSpeed, double zRotation)
 }
 
 #define TARGET_REV_SEC 8192
+#define ERROR 300 //UNIMPLEMENTED
 
 void SFDrive::PIDDrive(double leftTicks, double rightTicks)
 {
-   double leftSetPoint = 0;
-   double rightSetPoint = 0;
+   double leftStart = m_leftMotor->GetSelectedSensorPosition(0);
+   double rightStart = m_rightMotor->GetSelectedSensorPosition(0);
+   double leftSetPoint = m_leftMotor->GetSelectedSensorPosition(0);
+   double rightSetPoint = m_rightMotor->GetSelectedSensorPosition(0);
    double lastStepTime = Timer().GetFPGATimestamp();
-   while (m_robot->IsAutonomous() && leftSetPoint < leftTicks && rightSetPoint < rightTicks)
+   while (m_robot->IsAutonomous() && leftSetPoint - leftStart < leftTicks && rightSetPoint - rightStart < rightTicks)
    {
       double currStepTime = Timer().GetFPGATimestamp();
       leftSetPoint += (currStepTime - lastStepTime) * TARGET_REV_SEC;
@@ -72,7 +76,30 @@ void SFDrive::PIDDrive(double leftTicks, double rightTicks)
    }
 }
 
+#define WHEEL_RADIUS 6
+#define ROBOT_RADIUS 12
+#define NUM_CORRECTIONS 2
+
 void SFDrive::GyroTurn(double degreesClockwise)
 {
-   return;
+   for(int i = 0; i < NUM_CORRECTIONS; i++)
+   {
+      if(degreesClockwise < 0)
+      {
+
+      }
+      else
+      {
+
+      }
+   }
+}
+
+void SFDrive::DriveIntoWall(double timeOut) //I understand the concept of this, but don't know how to implement it and don't have enough time to figure it out
+{
+   double timeStart = Timer().GetFPGATimestamp();
+   while(Timer().GetFPGATimestamp() - timeOut < timeStart)
+   {
+      ArcadeDrive(1,0); //this is terrifying. Let's never use this.
+   }
 }
