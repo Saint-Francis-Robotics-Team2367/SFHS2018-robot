@@ -36,6 +36,7 @@ class Robot : public frc::IterativeRobot
     public:
         //Motor channels
 	const int joystickNum = 0;
+	const int joystickNum2 = 1;
 	const int rMotorFrontNum = 5;
 	const int rMotorBackNum = 4;
 	const int lMotorFrontNum = 3;
@@ -94,7 +95,7 @@ class Robot : public frc::IterativeRobot
 
         SFDrive *myRobot = new SFDrive (_lMotorFront, _rMotorFront);
         Joystick *stick = new Joystick (joystickNum);
-
+        Joystick *stick2 = new Joystick (joystickNum2);
         void RobotInit ()
         {
             //used to config the motor controllers for QuadEncoders(type of encoder)
@@ -174,7 +175,7 @@ class Robot : public frc::IterativeRobot
         {
             myRobot->ArcadeDrive (scale * stick->GetRawAxis (1), -(stick->GetRawAxis (4) > 0 ? 1 : -1) * stick->GetRawAxis (4) * stick->GetRawAxis (4));
 
-            if(stick->GetRawButton(7))
+            if(stick2->GetRawButton(7))
               {
         	_lRamp->Set(true);
         	_rRamp->Set(false);
@@ -184,45 +185,45 @@ class Robot : public frc::IterativeRobot
         	_lRamp->Set(false);
         	_rRamp->Set(true);
               }
-            if(stick->GetRawButton(2)) //b
+            if(stick2->GetRawButton(2)) //b
               {
         	this->_lCubeIntake->Set (1);
         	this->_rCubeIntake->Set (1);
               }
-            else if (stick->GetRawAxis (3) > TRIGGER_DEADZONE) //right trigger
+            else if (stick2->GetRawAxis (3) > TRIGGER_DEADZONE) //right trigger
             {
-                this->_lCubeIntake->Set (-stick->GetRawAxis (3));
+                this->_lCubeIntake->Set (-stick2->GetRawAxis (3));
             }
-            else if (stick->GetRawAxis (2) > TRIGGER_DEADZONE) //left trigger
+            else if (stick2->GetRawAxis (2) > TRIGGER_DEADZONE) //left trigger
             {
-                this->_rCubeIntake->Set (-stick->GetRawAxis (2));
+                this->_rCubeIntake->Set (-stick2->GetRawAxis (2));
             }
             else
             {
                 this->_lCubeIntake->Set (0);
                 this->_rCubeIntake->Set (0);
             }
-            if (stick->GetRawButtonReleased(1)) // a button
+            if (stick2->GetRawButtonReleased(1)) // a button
               {
         	currentAnglePos = TICKS_PER_DEGREE * 90;
               }
-            else if (stick->GetRawButtonReleased(4)) // y button
+            else if (stick2->GetRawButtonReleased(4)) // y button
               {
             	currentAnglePos = TICKS_PER_DEGREE * 0;
               }
-            else if(stick->GetRawButtonReleased(3)) // x button
+            else if(stick2->GetRawButtonReleased(3)) // x button
               {
             	currentAnglePos = switchPoint;
               }
-            else if(stick->GetRawButton(6)) // left bumper
+            else if(stick2->GetRawButton(6)) // left bumper
               {
             	    _cubeManipAngle->Set(1);
               }
-            else if(stick->GetRawButton(5)) // right bumper
+            else if(stick2->GetRawButton(5)) // right bumper
               {
             	    _cubeManipAngle->Set(-1);
               }
-            else if(!(stick->GetRawButton(5) || stick->GetRawButton(6)))
+            else if(!(stick2->GetRawButton(5) || stick2->GetRawButton(6)))
 		_cubeManipAngle->Set(0);
             //_cubeManipAngle->Set (ctre::phoenix::motorcontrol::ControlMode::Position, currentAnglePos);
         }
