@@ -12,12 +12,25 @@ private: //MEMBER VARIABLES
         double m_lastPIDTime = 0;
         int m_PIDStepTime = 10 ^ 8;
         double m_PIDStepSize = 500;
+        const float m_ticksPerRev = 1024 * 4;
+        const float m_wheelCircumference = 6 * 3.14;
+        const float m_wheelTrack = 24;
+        float m_currVelocity = 0;
+        const float m_maxAccl = 4000;
+        const float m_minDecelVel = 3000;
+        const float m_P = 1;
+        const float m_I = 0;
+        const float m_D = 10;
+        const float m_canTimeout = 0;
 
 public:
         SFDrive(WPI_TalonSRX * lMotor, WPI_TalonSRX * rMotor);
         void ArcadeDrive(double xSpeed, double zRotation);
-        void PIDDrive(double _ticks);
-        void PIDTurn(double degreesClockwise);
+        bool PIDDrive(float inches, float maxVel, float timeout = 2, bool ZeroVelocityAtEnd = true);
+        bool PIDTurn(float degreesClockwise, float radius, float maxVel, float timeout = 2, bool ZeroVelocityAtEnd = true);
+        void initPID();
+        void disableP();
+        void enableP();
 };
 
 #endif
