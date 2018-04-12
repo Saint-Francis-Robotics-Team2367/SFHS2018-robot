@@ -266,6 +266,8 @@ bool SFDrive::PIDShoot(float moveInches, float shootStartDist, float shootTime, 
 		m_rightMotor->Set(ctre::phoenix::motorcontrol::ControlMode::Position,std::copysign(setPoint, moveInches) * -1);
 	}
 
+	//stop Shot here as well in case the timeout cuts off the loop.
+
 	if(lastStepTime > startTime + timeout && lastStepTime > shootStartTime + shootTime) //simple error check, did we finish the motion before we ran out of time
 	{
 		return false;
@@ -297,4 +299,8 @@ void SFDrive::disableP()
 
 	m_leftMotor->Config_kP (0, 0, m_canTimeout);
 	m_rightMotor->Config_kP (0, 0, m_canTimeout);
+}
+void SFDrive::setAccel(float accl)
+{
+	m_maxAccl = accl;
 }

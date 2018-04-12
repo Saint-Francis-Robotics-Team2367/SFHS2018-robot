@@ -157,6 +157,22 @@ class Robot : public frc::IterativeRobot
         	if(!SmartDashboard::ContainsKey("Starting Position (LEFT, RIGHT, CENTER)"))
         	  SmartDashboard::PutString ("Starting Position (LEFT, RIGHT, CENTER)", position);
                 lastPacket = Timer ().GetFPGATimestamp ();
+
+                //list testing block in shuffleboard.
+                if(!SmartDashboard::ContainsKey("Arc Radius"))
+                	SmartDashboard::PutNumber("Arc Radius", 46.514);
+                if(!SmartDashboard::ContainsKey("Arc Angle"))
+                	SmartDashboard::PutNumber("Arc Angle", 61.73);
+                if(!SmartDashboard::ContainsKey("maxVel"))
+                	SmartDashboard::PutNumber("maxVel", 4.0*12.0);
+                if(!SmartDashboard::ContainsKey("Shot Travel"))
+                	SmartDashboard::PutNumber("Shot Travel", 22.0);
+                if(!SmartDashboard::ContainsKey("Shot Start Distance"))
+                	SmartDashboard::PutNumber("Shot Start Distance", 6.0);
+                if(!SmartDashboard::ContainsKey("Shot Time"))
+                	SmartDashboard::PutNumber("Shot Time", 0.7);
+                if(!SmartDashboard::ContainsKey("auto Timeout"))
+					SmartDashboard::PutNumber("auto Timeout", 4.0);
             }
 
         }
@@ -371,62 +387,93 @@ class Robot : public frc::IterativeRobot
         void TestInit ()
         {
             DriverStation::ReportError ("TestInit Started");
-            ConfigPIDS ();
-            /*Put PID values in ShuffleBoard
-            SmartDashboard::PutNumber ("P Drive", pConstantDrive);
-            SmartDashboard::PutNumber ("I Drive", iConstantDrive);
-            SmartDashboard::PutNumber ("D Drive", dConstantDrive);
-            SmartDashboard::PutNumber ("P Angle", pConstantAngle);
-            SmartDashboard::PutNumber ("I Angle", iConstantAngle);
-            SmartDashboard::PutNumber ("D Angle", dConstantAngle);
-            SmartDashboard::PutNumber ("Setpoint Drive", 0);
-            SmartDashboard::PutNumber ("Setpoint Angle", MAX_ANGLE_TICKS);
-            SmartDashboard::PutNumber ("Current Position - Right", 0);
-            SmartDashboard::PutNumber ("Current Position - Left", 0);
-            SmartDashboard::PutNumber ("Current Position - Angle", MAX_ANGLE_TICKS);
-            */
-            DriverStation::ReportError ("TestInit Completed");
+            //Set encoder positions to 0
+            ConfigPIDS();
+            myRobot->ArcadeDrive (0.0, 0.0);
+            currentAnglePos = _cubeManipAngle->GetSelectedSensorPosition(0);
+
+			//list testing block in shuffleboard.
+			SmartDashboard::PutNumber("Arc Radius", 46.514);
+			SmartDashboard::PutNumber("Arc Angle", 61.73);
+			SmartDashboard::PutNumber("maxVel", 48.0);
+			SmartDashboard::PutNumber("Shot Travel", 22.0);
+			SmartDashboard::PutNumber("Shot Start Distance", 6.0);
+			SmartDashboard::PutNumber("Shot Time", 0.7);
+			SmartDashboard::PutNumber("auto Timeout", 4.0);
+			SmartDashboard::PutNumber("maxAccl", 8000);
+          DriverStation::ReportError ("TestInit Completed");
         }
 
-        void TestPeriodic ()
-        {
-	    /*
-            if (lastTestPacket + 0.5 < Timer ().GetFPGATimestamp ()) //Update PID and setpoint values from shuffleboard
-            {
-                //Every 100 packets (2 seconds), update P, I, D values
-                pConstantDrive = SmartDashboard::GetNumber ("P Drive", pConstantDrive);
-                iConstantDrive = SmartDashboard::GetNumber ("I Drive", iConstantDrive);
-                dConstantDrive = SmartDashboard::GetNumber ("D Drive", dConstantDrive);
-                pConstantAngle = SmartDashboard::GetNumber ("P Angle", pConstantAngle);
-                iConstantAngle = SmartDashboard::GetNumber ("I Angle", iConstantAngle);
-                dConstantAngle = SmartDashboard::GetNumber ("D Angle", dConstantAngle);
-                setPointDrive = SmartDashboard::GetNumber ("Setpoint Drive", setPointDrive);
-                setPointAngle = SmartDashboard::GetNumber ("Setpoint Angle", setPointAngle);
-                SmartDashboard::PutNumber ("Current Position - Right", _rMotorFront->GetSensorCollection ().GetQuadraturePosition ());
-                SmartDashboard::PutNumber ("Current Position - Left", _lMotorFront->GetSensorCollection ().GetQuadraturePosition ());
-                SmartDashboard::PutNumber ("Current Position - Angle", _cubeManipAngle->GetSensorCollection ().GetQuadraturePosition ());
-                _lMotorFront->Config_kP (0, pConstantDrive, checkTimeout);
-                _lMotorFront->Config_kI (0, iConstantDrive, checkTimeout);
-                _lMotorFront->Config_kD (0, dConstantDrive, checkTimeout);
-                _lMotorBack->Config_kP (0, pConstantDrive, checkTimeout);
-                _lMotorBack->Config_kI (0, iConstantDrive, checkTimeout);
-                _lMotorBack->Config_kD (0, dConstantDrive, checkTimeout);
-                _rMotorFront->Config_kP (0, pConstantDrive, checkTimeout);
-                _rMotorFront->Config_kI (0, iConstantDrive, checkTimeout);
-                _rMotorFront->Config_kD (0, dConstantDrive, checkTimeout);
-                _rMotorBack->Config_kP (0, pConstantDrive, checkTimeout);
-                _rMotorBack->Config_kI (0, iConstantDrive, checkTimeout);
-                _rMotorBack->Config_kD (0, dConstantDrive, checkTimeout);
-                _cubeManipAngle->Config_kP (0, pConstantAngle, checkTimeout);
-                _cubeManipAngle->Config_kI (0, iConstantAngle, checkTimeout);
-                _cubeManipAngle->Config_kD (0, dConstantAngle, checkTimeout);
-                lastTestPacket = Timer ().GetFPGATimestamp ();
-            }
-            */
-	    myRobot->ArcadeDrive(1,0);
-	    //_rMotorFront->Set(ctre::phoenix::motorcontrol::ControlMode::Position, 25000);
-            //_lMotorFront->Set(ctre::phoenix::motorcontrol::ControlMode::Position, -25000);
-        }
+	void TestPeriodic()
+	{
+		myRobot->ArcadeDrive (scale * stick->GetRawAxis(1), -(stick->GetRawAxis(4) > 0 ? 1 : -1) * stick->GetRawAxis(4) * stick->GetRawAxis(4));
+		myRobot->setAccel(SmartDashboard::GetNumber("maxAccl",8000));
+
+		if (stick2->GetRawButton(7))
+		{
+			float radius, angle, maxVel, shotTravel, shotDist, shotTime, timeout;
+			radius =SmartDashboard::GetNumber("Arc Radius", 46.514);
+			angle = SmartDashboard::GetNumber("Arc Angle", 61.73);
+			maxVel = SmartDashboard::GetNumber("maxVel", 48.0);
+			shotTravel = SmartDashboard::GetNumber("Shot Travel", 22.0);
+			shotDist = SmartDashboard::GetNumber("Shot Start Distance", 6.0);
+			shotTime = SmartDashboard::GetNumber("Shot Time", 0.7);
+			timeout = SmartDashboard::GetNumber("auto Timeout", 4.0);
+
+			int errCnt =0;
+			errCnt += myRobot->PIDTurn(angle, radius, maxVel, timeout, false);
+			errCnt += myRobot->PIDTurn(angle * -1.0f, radius, maxVel, timeout, false);
+			errCnt += myRobot->PIDShoot(shotTravel, shotDist, shotTime, maxVel, timeout);
+
+			if(errCnt)
+				DriverStation::ReportError("PID Timeout");
+		}
+
+
+		if (stick2->GetRawButton(2)) //b
+				{
+			this->_lCubeIntake->Set(1);
+			this->_rCubeIntake->Set(1);
+		}
+		else if (stick2->GetRawAxis(3) > TRIGGER_DEADZONE) //right trigger
+		{
+			this->_lCubeIntake->Set(-stick2->GetRawAxis(3));
+		}
+		else if (stick2->GetRawAxis(2) > TRIGGER_DEADZONE) //left trigger
+		{
+			this->_rCubeIntake->Set(-stick2->GetRawAxis(2));
+		}
+		else
+		{
+			this->_lCubeIntake->Set(0);
+			this->_rCubeIntake->Set(0);
+		}
+		if (stick2->GetRawButtonReleased(1)) // a button
+				{
+			currentAnglePos = TICKS_PER_DEGREE * 90;
+		}
+		else if (stick2->GetRawButtonReleased(4)) // y button
+		{
+			currentAnglePos = TICKS_PER_DEGREE * 0;
+		}
+		else if (stick2->GetRawButtonReleased(3)) // x button
+		{
+			currentAnglePos = switchPoint;
+		}
+		else if (stick2->GetRawButton(6)) // left bumper
+		{
+			_cubeManipAngle->Set(1);
+		}
+		else if (stick2->GetRawButton(5)) // right bumper
+		{
+			_cubeManipAngle->Set(-1);
+		}
+		else if (!(stick2->GetRawButton(5) || stick2->GetRawButton(6)))
+		{
+			_cubeManipAngle->Set(0);
+		}
+
+	}
 
         void ConfigPIDS ()
         {
