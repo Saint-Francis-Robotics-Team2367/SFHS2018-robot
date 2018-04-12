@@ -68,6 +68,7 @@ class Robot : public frc::IterativeRobot
         double lastPacket = 0;
         double lastTestPacket = 0;
         double switchPoint = 45 * TICKS_PER_DEGREE; //TODO
+        const float gameDataTimeout = 0.1; //amount of time to wait in seconds for game data before defaulting to move forward
         //Starting Data
         std::string position = "LEFT";
         std::string gameData = "";
@@ -146,8 +147,7 @@ class Robot : public frc::IterativeRobot
 
         void RobotPeriodic ()
         {
-            if (gameData == "")
-                gameData = frc::DriverStation::GetInstance ().GetGameSpecificMessage ().substr (0, 1);
+
             if (lastPacket + .5 < Timer ().GetFPGATimestamp ())
             {
         	if(!SmartDashboard::ContainsKey("Mode (NOTHING, BASIC, INTERMEDIATE, ADVANCED, EMERGENCY)"))
@@ -262,7 +262,13 @@ class Robot : public frc::IterativeRobot
 
         void AutonomousPeriodic ()
         {
-          _cubeManipAngle->Set(-0.4);
+        	double autoStart = Timer().GetFPGATimestamp();
+        	do{
+        			gameData = frc::DriverStation::GetInstance ().GetGameSpecificMessage ().substr (0, 1);
+        	}while(gameData != "" && Timer().GetFPGATimestamp() < autoStart + gameDataTimeout);
+
+
+		  _cubeManipAngle->Set(-0.4);
           if(!autonHasRun)
 	      {
 		if (gameData == "")
