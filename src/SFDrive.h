@@ -16,7 +16,7 @@ private: //MEMBER VARIABLES
         const float m_wheelCircumference = 6 * 3.14;
         const float m_wheelTrack = 24;
         float m_currVelocity = 0;
-        const float m_maxAccl = 8000;
+        float m_maxAccl = 8000;
         const float m_minDecelVel = 3000;
         const float m_P = 1;
         const float m_I = 0;
