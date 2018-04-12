@@ -124,7 +124,7 @@ bool  SFDrive::PIDTurn(float degreesClockwise, float radius, float maxVel, float
 {
 
 	int setPoint = 0, endPoint, innerChordLen;
-	float currAngle, endAngle = abs(degreesClockwise);
+	float endAngle = abs(degreesClockwise);
 	int maxVelDelta = maxVel/m_wheelCircumference * m_ticksPerRev;
 	double  startTime ,currStepTime, lastStepTime, deltaTime;
 
@@ -210,9 +210,71 @@ bool  SFDrive::PIDTurn(float degreesClockwise, float radius, float maxVel, float
 		}
 	}
 
-	return true;
+	if(lastStepTime > startTime + timeout) //simple error check, did we finish the motion before we ran out of time
+	{
+		return false;
+	}
+	else
+	{
+		return true;
+	}
 }
 
+bool SFDrive::PIDShoot(float moveInches, float shootStartDist, float shootTime, float maxVel, float timeout)
+{
+	int setPoint = 0;
+	double  startTime ,currStepTime, lastStepTime, deltaTime, shootStartTime = 0;
+
+	//convert from inches to encoder ticks
+	float endPoint = abs(moveInches) / m_wheelCircumference * m_ticksPerRev;
+	float shootPoint = abs(shootStartDist) / m_wheelCircumference * m_ticksPerRev;
+	int maxVelDelta = maxVel/m_wheelCircumference * m_ticksPerRev;
+
+	//zero encoder
+	disableP();
+	m_leftMotor->SetSelectedSensorPosition(0,0,m_canTimeout);
+	m_rightMotor->SetSelectedSensorPosition(0,0,m_canTimeout);
+	m_leftMotor->Set(ctre::phoenix::motorcontrol::ControlMode::Position, 0);
+	m_rightMotor->Set(ctre::phoenix::motorcontrol::ControlMode::Position,0);
+	enableP();
+
+	startTime = lastStepTime = Timer().GetFPGATimestamp();
+	while(setPoint != endPoint && startTime + timeout > lastStepTime)
+	{
+		//handle timing
+		currStepTime = Timer().GetFPGATimestamp();
+		deltaTime = currStepTime - lastStepTime;
+		lastStepTime = currStepTime;
+
+
+		m_currVelocity += m_maxAccl * deltaTime;
+		if(m_currVelocity > maxVelDelta) m_currVelocity = maxVelDelta;
+		setPoint += m_currVelocity * deltaTime;
+		if(setPoint > endPoint) setPoint = endPoint;
+
+		if(setPoint >= shootPoint && shootStartTime == 0)
+		{
+			//shoot
+			shootStartTime = Timer().GetFPGATimestamp();
+		}
+		if(Timer().GetFPGATimestamp() > shootStartTime + shootTime)
+		{
+			//stop Shot
+		}
+
+		m_leftMotor->Set(ctre::phoenix::motorcontrol::ControlMode::Position, std::copysign(setPoint, moveInches));
+		m_rightMotor->Set(ctre::phoenix::motorcontrol::ControlMode::Position,std::copysign(setPoint, moveInches) * -1);
+	}
+
+	if(lastStepTime > startTime + timeout && lastStepTime > shootStartTime + shootTime) //simple error check, did we finish the motion before we ran out of time
+	{
+		return false;
+	}
+	else
+	{
+		return true;
+	}
+}
 void SFDrive::initPID()
 {
 	m_leftMotor->Config_kP (0, m_P, m_canTimeout);

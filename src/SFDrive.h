@@ -26,8 +26,9 @@ private: //MEMBER VARIABLES
 public:
         SFDrive(WPI_TalonSRX * lMotor, WPI_TalonSRX * rMotor);
         void ArcadeDrive(double xSpeed, double zRotation);
-        bool PIDDrive(float inches, float maxVel, float timeout = 2, bool ZeroVelocityAtEnd = true);
-        bool PIDTurn(float degreesClockwise, float radius, float maxVel, float timeout = 2, bool ZeroVelocityAtEnd = true);
+        bool PIDShoot(float moveInches, float shootStartDist, float shootTime, float maxVel, float timeout = 4);
+        bool PIDDrive(float inches, float maxVel, float timeout = 4, bool ZeroVelocityAtEnd = true);
+        bool PIDTurn(float degreesClockwise, float radius, float maxVel, float timeout = 4, bool ZeroVelocityAtEnd = true);
         void initPID();
         void disableP();
         void enableP();
