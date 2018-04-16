@@ -138,8 +138,8 @@ bool  SFDrive::PIDTurn(float degreesClockwise, float radius, float maxVel, float
 
 
 	if(radius < m_wheelTrack/2) radius = m_wheelTrack/2.0f;
-	endPoint = (((endAngle / 360.0f) * (radius+ m_wheelTrack/2.0f * 2* M_PI)) /m_wheelCircumference) * m_ticksPerRev;
-	innerChordLen = (((endAngle / 360.0f) * (radius - m_wheelTrack/2.0f * 2* M_PI)) /m_wheelCircumference) * m_ticksPerRev;
+	endPoint = (((endAngle / 360.0f) * ((radius+ m_wheelTrack/2.0f) * 2* M_PI)) /m_wheelCircumference) * m_ticksPerRev;
+	innerChordLen = (((endAngle / 360.0f) * ((radius - m_wheelTrack/2.0f) * 2* M_PI)) /m_wheelCircumference) * m_ticksPerRev;
 
 	startTime = lastStepTime = Timer().GetFPGATimestamp();
 
