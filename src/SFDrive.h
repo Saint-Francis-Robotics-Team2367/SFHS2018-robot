@@ -22,6 +22,7 @@ private: //MEMBER VARIABLES
         const float m_I = 0;
         const float m_D = 10;
         const float m_canTimeout = 0;
+        const float m_isInverted = -1; //set to positive number if robot is going in reverse during positive auto moves
 
 public:
         SFDrive(WPI_TalonSRX * lMotor, WPI_TalonSRX * rMotor);

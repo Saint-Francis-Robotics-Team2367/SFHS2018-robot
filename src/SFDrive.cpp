@@ -85,8 +85,8 @@ bool SFDrive::PIDDrive(float inches, float maxVel, float timeout, bool ZeroVeloc
 			setPoint += m_currVelocity * deltaTime;
 			if(setPoint > endPoint) setPoint = endPoint;
 
-			m_leftMotor->Set(ctre::phoenix::motorcontrol::ControlMode::Position, std::copysign(setPoint, inches));
-			m_rightMotor->Set(ctre::phoenix::motorcontrol::ControlMode::Position,std::copysign(setPoint, inches) * -1);
+			m_leftMotor->Set(ctre::phoenix::motorcontrol::ControlMode::Position, std::copysign(setPoint, inches) * m_isInverted);
+			m_rightMotor->Set(ctre::phoenix::motorcontrol::ControlMode::Position,std::copysign(setPoint, inches) * -1 * m_isInverted);
 		}
 	}
 	else
@@ -105,8 +105,8 @@ bool SFDrive::PIDDrive(float inches, float maxVel, float timeout, bool ZeroVeloc
 			setPoint += m_currVelocity * deltaTime;
 			if(setPoint > endPoint) setPoint = endPoint;
 
-			m_leftMotor->Set(ctre::phoenix::motorcontrol::ControlMode::Position, std::copysign(setPoint, inches));
-			m_rightMotor->Set(ctre::phoenix::motorcontrol::ControlMode::Position,std::copysign(setPoint, inches) * -1);
+			m_leftMotor->Set(ctre::phoenix::motorcontrol::ControlMode::Position, std::copysign(setPoint, inches) * m_isInverted);
+			m_rightMotor->Set(ctre::phoenix::motorcontrol::ControlMode::Position,std::copysign(setPoint, inches) * -1 * m_isInverted);
 		}
 	}
 
@@ -171,13 +171,13 @@ bool  SFDrive::PIDTurn(float degreesClockwise, float radius, float maxVel, float
 
 			if(degreesClockwise > 0)
 			{
-				m_leftMotor->Set(ctre::phoenix::motorcontrol::ControlMode::Position, setPoint);
-				m_rightMotor->Set(ctre::phoenix::motorcontrol::ControlMode::Position,innerSet *-1);
+				m_leftMotor->Set(ctre::phoenix::motorcontrol::ControlMode::Position, setPoint * m_isInverted);
+				m_rightMotor->Set(ctre::phoenix::motorcontrol::ControlMode::Position,innerSet *-1  * m_isInverted);
 			}
 			else
 			{
-				m_leftMotor->Set(ctre::phoenix::motorcontrol::ControlMode::Position, innerSet);
-				m_rightMotor->Set(ctre::phoenix::motorcontrol::ControlMode::Position,setPoint * -1);
+				m_leftMotor->Set(ctre::phoenix::motorcontrol::ControlMode::Position, innerSet  * m_isInverted);
+				m_rightMotor->Set(ctre::phoenix::motorcontrol::ControlMode::Position,setPoint * -1 * m_isInverted);
 			}
 		}
 	}
@@ -199,13 +199,13 @@ bool  SFDrive::PIDTurn(float degreesClockwise, float radius, float maxVel, float
 
 			if(degreesClockwise > 0)
 			{
-				m_leftMotor->Set(ctre::phoenix::motorcontrol::ControlMode::Position, setPoint);
-				m_rightMotor->Set(ctre::phoenix::motorcontrol::ControlMode::Position,innerSet *-1);
+				m_leftMotor->Set(ctre::phoenix::motorcontrol::ControlMode::Position, setPoint  * m_isInverted);
+				m_rightMotor->Set(ctre::phoenix::motorcontrol::ControlMode::Position,innerSet *-1  * m_isInverted);
 			}
 			else
 			{
-				m_leftMotor->Set(ctre::phoenix::motorcontrol::ControlMode::Position, innerSet);
-				m_rightMotor->Set(ctre::phoenix::motorcontrol::ControlMode::Position,setPoint * -1);
+				m_leftMotor->Set(ctre::phoenix::motorcontrol::ControlMode::Position, innerSet  * m_isInverted);
+				m_rightMotor->Set(ctre::phoenix::motorcontrol::ControlMode::Position,setPoint * -1  * m_isInverted);
 			}
 		}
 	}
@@ -262,8 +262,8 @@ bool SFDrive::PIDShoot(float moveInches, float shootStartDist, float shootTime, 
 			//stop Shot
 		}
 
-		m_leftMotor->Set(ctre::phoenix::motorcontrol::ControlMode::Position, std::copysign(setPoint, moveInches));
-		m_rightMotor->Set(ctre::phoenix::motorcontrol::ControlMode::Position,std::copysign(setPoint, moveInches) * -1);
+		m_leftMotor->Set(ctre::phoenix::motorcontrol::ControlMode::Position, std::copysign(setPoint, moveInches)  * m_isInverted);
+		m_rightMotor->Set(ctre::phoenix::motorcontrol::ControlMode::Position,std::copysign(setPoint, moveInches) * -1  * m_isInverted);
 	}
 
 	//stop Shot here as well in case the timeout cuts off the loop.
