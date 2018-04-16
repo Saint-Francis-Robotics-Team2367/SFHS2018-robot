@@ -265,7 +265,7 @@ class Robot : public frc::IterativeRobot
         	double autoStart = Timer().GetFPGATimestamp();
         	do{
         			gameData = frc::DriverStation::GetInstance ().GetGameSpecificMessage ().substr (0, 1);
-        	}while(gameData != "" && Timer().GetFPGATimestamp() < autoStart + gameDataTimeout);
+        	}while(gameData == "" && Timer().GetFPGATimestamp() < autoStart + gameDataTimeout);
 
 
 		  _cubeManipAngle->Set(-0.4);
