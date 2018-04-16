@@ -63,7 +63,7 @@ bool SFDrive::PIDDrive(float inches, float maxVel, float timeout, bool ZeroVeloc
 	if(ZeroVelocityAtEnd)
 	{
 		startTime = lastStepTime = Timer().GetFPGATimestamp();
-		while(setPoint != endPoint && startTime + timeout > lastStepTime)
+		while((int) setPoint < (int) endPoint && startTime + timeout > lastStepTime)
 		{
 			//handle timing
 			currStepTime = Timer().GetFPGATimestamp();
@@ -92,7 +92,7 @@ bool SFDrive::PIDDrive(float inches, float maxVel, float timeout, bool ZeroVeloc
 	else
 	{
 		startTime = lastStepTime = Timer().GetFPGATimestamp();
-		while(setPoint != endPoint && startTime + timeout > lastStepTime)
+		while((int) setPoint < (int) endPoint && startTime + timeout > lastStepTime)
 		{
 			//handle timing
 			currStepTime = Timer().GetFPGATimestamp();
@@ -146,7 +146,7 @@ bool  SFDrive::PIDTurn(float degreesClockwise, float radius, float maxVel, float
 	if(ZeroVelocityAtEnd)
 	{
 		startTime = lastStepTime = Timer().GetFPGATimestamp();
-		while(setPoint != endPoint && startTime + timeout > lastStepTime)
+		while((int) setPoint < (int) endPoint && startTime + timeout > lastStepTime)
 		{
 			//handle timing
 			currStepTime = Timer().GetFPGATimestamp();
@@ -183,7 +183,7 @@ bool  SFDrive::PIDTurn(float degreesClockwise, float radius, float maxVel, float
 	}
 	else
 	{
-		while(setPoint < endPoint && startTime + timeout > lastStepTime)
+		while((int) setPoint < (int) endPoint && startTime + timeout > lastStepTime)
 		{
 			//handle timing
 			currStepTime = Timer().GetFPGATimestamp();
@@ -239,7 +239,7 @@ bool SFDrive::PIDShoot(float moveInches, float shootStartDist, float shootTime, 
 	enableP();
 
 	startTime = lastStepTime = Timer().GetFPGATimestamp();
-	while(setPoint != endPoint && startTime + timeout > lastStepTime)
+	while((int) setPoint < (int) endPoint && startTime + timeout > lastStepTime)
 	{
 		//handle timing
 		currStepTime = Timer().GetFPGATimestamp();
