@@ -169,6 +169,9 @@ bool  SFDrive::PIDTurn(float degreesClockwise, float radius, float maxVel, float
 			if(setPoint > endPoint) setPoint = endPoint;
 			int innerSet = ((float) setPoint/ (float)endPoint) * innerChordLen;
 
+			setPoint = std::copysign(setPoint, degreesClockwise);
+			innerSet = std::copysign(innerSet, degreesClockwise);
+
 			if(degreesClockwise > 0)
 			{
 				m_leftMotor->Set(ctre::phoenix::motorcontrol::ControlMode::Position, setPoint * m_isInverted);
