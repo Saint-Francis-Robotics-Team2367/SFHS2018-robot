@@ -39,8 +39,8 @@ class Robot : public frc::IterativeRobot
 	const int joystickNum2 = 1;
 	const int rMotorFrontNum = 5;
 	const int rMotorBackNum = 4;
-	const int lMotorFrontNum = 3;
-	const int lMotorBackNum = 2;
+	const int lMotorFrontNum = 2;
+	const int lMotorBackNum = 3;
 	const int lCubeIntakeNum = 1;
 	const int rCubeIntakeNum = 2;
 	const int cubeManipAngleNum = 10;
@@ -201,24 +201,30 @@ class Robot : public frc::IterativeRobot
         	_lRamp->Set(false);
         	_rRamp->Set(true);
               }
-            if(stick2->GetRawButton(2)) //b
+            if(stick->GetRawButton(2)) //b
               {
         	this->_lCubeIntake->Set (1);
         	this->_rCubeIntake->Set (1);
               }
-            else if (stick2->GetRawAxis (3) > TRIGGER_DEADZONE) //right trigger
-            {
-                this->_lCubeIntake->Set (-stick2->GetRawAxis (3));
-            }
-            else if (stick2->GetRawAxis (2) > TRIGGER_DEADZONE) //left trigger
-            {
-                this->_rCubeIntake->Set (-stick2->GetRawAxis (2));
-            }
             else
             {
-                this->_lCubeIntake->Set (0);
-                this->_rCubeIntake->Set (0);
-            }
+            	if (stick->GetRawAxis (3) > TRIGGER_DEADZONE) //right trigger
+				{
+					this->_lCubeIntake->Set (-stick->GetRawAxis (3));
+				}
+            	else
+            	{
+            		this->_lCubeIntake->Set (0);
+            	}
+				if (stick->GetRawAxis (2) > TRIGGER_DEADZONE) //left trigger
+				{
+					this->_rCubeIntake->Set (-stick->GetRawAxis (2));
+				}
+				else
+				{
+					this->_rCubeIntake->Set (0);
+				}
+        	}
             if (stick2->GetRawButtonReleased(1)) // a button
               {
         	currentAnglePos = TICKS_PER_DEGREE * 90;
@@ -231,18 +237,21 @@ class Robot : public frc::IterativeRobot
               {
             	currentAnglePos = switchPoint;
               }
-            else if(stick2->GetRawButton(6)) // left bumper
+
+            if(stick->GetRawButton(6)) // left bumper
               {
-            	    _cubeManipAngle->Set(1);
+            		_cubeManipAngle->ConfigPeakCurrentLimit (5, checkTimeout);
+            	    _cubeManipAngle->Set(ctre::phoenix::motorcontrol::ControlMode::PercentOutput, .8);
               }
-            else if(stick2->GetRawButton(5)) // right bumper
+            else if(stick->GetRawButton(5)) // right bumper
               {
-            	    _cubeManipAngle->Set(-1);
+            	_cubeManipAngle->ConfigPeakCurrentLimit (15, checkTimeout);
+            	_cubeManipAngle->Set(ctre::phoenix::motorcontrol::ControlMode::PercentOutput, -1);
               }
-            else if(!(stick2->GetRawButton(5) || stick2->GetRawButton(6)))
-		_cubeManipAngle->Set(0);
-            //_cubeManipAngle->Set (ctre::phoenix::motorcontrol::ControlMode::Position, currentAnglePos);
-        }
+            else if(!(stick->GetRawButton(5) || stick2->GetRawButton(6)))
+            	_cubeManipAngle->Set(ctre::phoenix::motorcontrol::ControlMode::PercentOutput, 0.0);
+
+		}
 
         void AutonomousInit ()
         {
@@ -395,51 +404,72 @@ class Robot : public frc::IterativeRobot
 			//list testing block in shuffleboard.
 			SmartDashboard::PutNumber("Arc Radius", 46.514);
 			SmartDashboard::PutNumber("Arc Angle", 61.73);
-			SmartDashboard::PutNumber("maxVel", 48.0);
-			SmartDashboard::PutNumber("Shot Travel", 22.0);
+			SmartDashboard::PutNumber("maxVel", 55.0);
+			SmartDashboard::PutNumber("Shot Travel", 24.0);
 			SmartDashboard::PutNumber("Shot Start Distance", 6.0);
 			SmartDashboard::PutNumber("Shot Time", 0.7);
 			SmartDashboard::PutNumber("auto Timeout", 4.0);
-			SmartDashboard::PutNumber("maxAccl", 8000);
-          DriverStation::ReportError ("TestInit Completed");
-        }
+			SmartDashboard::PutNumber("maxAccl", 10000);
+			DriverStation::ReportError ("TestInit Completed");
+		  _rMotorBack->Set (ctre::phoenix::motorcontrol::ControlMode::Follower, rMotorFrontNum);
+		  _lMotorBack->Set (ctre::phoenix::motorcontrol::ControlMode::Follower, lMotorFrontNum);
+		}
 
 	void TestPeriodic()
 	{
 		myRobot->ArcadeDrive (scale * stick->GetRawAxis(1), -(stick->GetRawAxis(4) > 0 ? 1 : -1) * stick->GetRawAxis(4) * stick->GetRawAxis(4));
 		myRobot->setAccel(SmartDashboard::GetNumber("maxAccl",8000));
+		SmartDashboard::PutNumber("Left Encoder", _lMotorFront->GetSelectedSensorPosition(0));
+		SmartDashboard::PutNumber("Right Encoder", _rMotorFront->GetSelectedSensorPosition(0));
 
-		if (stick2->GetRawButton(7))
+		if (stick->GetRawButton(7))
 		{
 			float radius, angle, maxVel, shotTravel, shotDist, shotTime, timeout;
 			radius =SmartDashboard::GetNumber("Arc Radius", 46.514);
 			angle = SmartDashboard::GetNumber("Arc Angle", 61.73);
-			maxVel = SmartDashboard::GetNumber("maxVel", 48.0);
-			shotTravel = SmartDashboard::GetNumber("Shot Travel", 22.0);
+			maxVel = SmartDashboard::GetNumber("maxVel", 55);
+			shotTravel = SmartDashboard::GetNumber("Shot Travel", 24.0);
 			shotDist = SmartDashboard::GetNumber("Shot Start Distance", 6.0);
 			shotTime = SmartDashboard::GetNumber("Shot Time", 0.7);
 			timeout = SmartDashboard::GetNumber("auto Timeout", 4.0);
 
 			int errCnt =0;
-			errCnt += myRobot->PIDTurn(angle, radius, maxVel, timeout, false);
-			errCnt += myRobot->PIDTurn(angle * -1.0f, radius, maxVel, timeout, false);
-			errCnt += myRobot->PIDShoot(shotTravel, shotDist, shotTime, maxVel, timeout);
+			errCnt += myRobot->PIDTurn(angle * -1.0f, radius, maxVel, timeout, true);
+			errCnt += myRobot->PIDTurn(angle , radius, maxVel, timeout, true);
+			errCnt += myRobot->PIDDrive(shotTravel,maxVel,timeout,true);
+			errCnt += myRobot->PIDDrive(-27,maxVel,timeout,true);
+			errCnt += myRobot->PIDTurn(85 , 0, maxVel, timeout, true);
+			errCnt += myRobot->PIDDrive(30,maxVel,timeout,true);
+			errCnt += myRobot->PIDDrive(-57,maxVel,timeout,true);
+			errCnt += myRobot->PIDTurn(-85 , 0, maxVel, timeout, true);
+			errCnt += myRobot->PIDDrive(13,maxVel,timeout,true);
 
 			if(errCnt)
-				DriverStation::ReportError("PID Timeout");
+				DriverStation::ReportError("PID Timeout" + errCnt);
 		}
+		if (stick->GetRawButton(8))
+				{
+					float maxVel, shotTravel, timeout;
+					maxVel = SmartDashboard::GetNumber("maxVel", 80.0);
+					shotTravel = SmartDashboard::GetNumber("Shot Travel", 24.0);
+					timeout = SmartDashboard::GetNumber("auto Timeout", 4.0);
 
+					int errCnt =0;
+					errCnt += myRobot->PIDDrive(shotTravel,maxVel,timeout,true);
+					if(errCnt)
+						DriverStation::ReportError("PID Timeout" + errCnt);
+				}
 
-		if (stick2->GetRawButton(2)) //b
+		if (stick->GetRawButton(2)) //b
 				{
 			this->_lCubeIntake->Set(1);
 			this->_rCubeIntake->Set(1);
 		}
-		else if (stick2->GetRawAxis(3) > TRIGGER_DEADZONE) //right trigger
+		else if (stick->GetRawAxis(3) > TRIGGER_DEADZONE) //right trigger
 		{
 			this->_lCubeIntake->Set(-stick2->GetRawAxis(3));
 		}
-		else if (stick2->GetRawAxis(2) > TRIGGER_DEADZONE) //left trigger
+		else if (stick->GetRawAxis(2) > TRIGGER_DEADZONE) //left trigger
 		{
 			this->_rCubeIntake->Set(-stick2->GetRawAxis(2));
 		}
@@ -448,27 +478,27 @@ class Robot : public frc::IterativeRobot
 			this->_lCubeIntake->Set(0);
 			this->_rCubeIntake->Set(0);
 		}
-		if (stick2->GetRawButtonReleased(1)) // a button
+		if (stick->GetRawButtonReleased(1)) // a button
 				{
 			currentAnglePos = TICKS_PER_DEGREE * 90;
 		}
-		else if (stick2->GetRawButtonReleased(4)) // y button
+		else if (stick->GetRawButtonReleased(4)) // y button
 		{
 			currentAnglePos = TICKS_PER_DEGREE * 0;
 		}
-		else if (stick2->GetRawButtonReleased(3)) // x button
+		else if (stick->GetRawButtonReleased(3)) // x button
 		{
 			currentAnglePos = switchPoint;
 		}
-		else if (stick2->GetRawButton(6)) // left bumper
+		else if (stick->GetRawButton(6)) // left bumper
 		{
 			_cubeManipAngle->Set(1);
 		}
-		else if (stick2->GetRawButton(5)) // right bumper
+		else if (stick->GetRawButton(5)) // right bumper
 		{
 			_cubeManipAngle->Set(-1);
 		}
-		else if (!(stick2->GetRawButton(5) || stick2->GetRawButton(6)))
+		else if (!(stick->GetRawButton(5) || stick2->GetRawButton(6)))
 		{
 			_cubeManipAngle->Set(0);
 		}
