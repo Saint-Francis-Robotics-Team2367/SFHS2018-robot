@@ -282,6 +282,10 @@ class Robot : public frc::IterativeRobot
          DriverStation::ReportError("AUTON START. Mode: " + mode + " Starting Position: " + position + " Cross field? " + (allowFieldCrossing ? "True" : "False") + " Switch side: " + gameData);
 
          int errorCode = 0;
+         if(mode == "EMERGENCY")
+         {
+            myRobot->PIDDrive(60, maxVel, timeout, true);
+         }
 
          if (mode == "BASIC" || mode == "INTERMEDIATE" || mode == "ADVANCED")
          {
@@ -330,11 +334,13 @@ class Robot : public frc::IterativeRobot
             {
                if (gameData == "L")
                {
-
+                  //Center left auto UNIMPLEMENTED (goes in a straight line!)
+                  myRobot->PIDDrive(60, maxVel, timeout, true);
                }
                else if (gameData == "R")
                {
-
+                  //Center right auto UNIMPLEMENTED (goes in a straight line!)
+                  myRobot->PIDDrive(60, maxVel, timeout, true);
                }
             }
             else if (position == "RIGHT")
