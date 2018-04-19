@@ -280,7 +280,7 @@ class Robot : public frc::IterativeRobot
          DriverStation::ReportError("AUTON START. Mode: " + mode + " Starting Position: " + position + " Cross field? " + (allowFieldCrossing ? "True" : "False") + " Switch side: " + gameData);
 
          int errorCode = 0;
-         if(mode == "EMERGENCY")
+         if (mode == "EMERGENCY")
          {
             myRobot->PIDDrive(60, maxVel, timeout, true);
          }
@@ -332,12 +332,16 @@ class Robot : public frc::IterativeRobot
             {
                if (gameData == "L")
                {
-                  //Center left auto UNIMPLEMENTED (goes in a straight line!)
+                  myRobot->PIDTurn(61.73 * -1.0f, 46.514, maxVel, timeout, true);
+                  myRobot->PIDTurn(61.73, 46.514, maxVel, timeout, true);
+                  myRobot->PIDShoot(shotTravel, 8, 0.7, maxVel, timeout);
                   myRobot->PIDDrive(60, maxVel, timeout, true);
                }
                else if (gameData == "R")
                {
-                  //Center right auto UNIMPLEMENTED (goes in a straight line!)
+                  myRobot->PIDTurn(61.73, 46.514, maxVel, timeout, true);
+                  myRobot->PIDTurn(61.73 * -1.0f, 46.514, maxVel, timeout, true);
+                  myRobot->PIDShoot(shotTravel, 8, 0.7, maxVel, timeout);
                   myRobot->PIDDrive(60, maxVel, timeout, true);
                }
             }
@@ -383,7 +387,6 @@ class Robot : public frc::IterativeRobot
                }
             }
          }
-         DriverStation::ReportError("Auton completed with " + std::to_string(errorCode) + " errors.");
       }
 
       void AutonomousPeriodic()
