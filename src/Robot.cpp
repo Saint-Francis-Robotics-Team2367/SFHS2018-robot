@@ -39,13 +39,11 @@ class Robot : public frc::IterativeRobot
       const int joystickNum2 = 1;
       const int rMotorFrontNum = 5;
       const int rMotorBackNum = 4;
-      const int lMotorFrontNum = 2;
-      const int lMotorBackNum = 3;
+      const int lMotorFrontNum = 3;
+      const int lMotorBackNum = 2;
       const int lCubeIntakeNum = 1;
       const int rCubeIntakeNum = 2;
-      const int cubeManipAngleNum = 10;
-      const int lSolenoidNum = 1;
-      const int rSolenoidNum = 2;
+      const int cubeManipAngleNum = 10; //may be incorrect, pls verify
 
       //Motor tuning constants
       double scale = 1;
