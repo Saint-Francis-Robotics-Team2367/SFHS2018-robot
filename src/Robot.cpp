@@ -377,7 +377,7 @@ class Robot : public frc::IterativeRobot
 
          if (position == "LEFT")
          {
-            errorCode += myRobot->PIDDrive(168, maxVel, timeout, true);
+            errorCode += myRobot->PIDDrive(92, maxVel, timeout, true);
             errorCode += myRobot->PIDTurn(85, radius, maxVel, timeout, true);
             if (gameData == "L")
             {
@@ -401,7 +401,7 @@ class Robot : public frc::IterativeRobot
          }
          else if (position == "RIGHT")
          {
-            errorCode += myRobot->PIDDrive(168, maxVel, timeout, true);
+            errorCode += myRobot->PIDDrive(92, maxVel, timeout, true);
             errorCode += myRobot->PIDTurn(-85, radius, maxVel, timeout, true);
             if (gameData == "R")
             {
