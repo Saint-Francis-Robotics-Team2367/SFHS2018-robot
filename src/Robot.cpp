@@ -28,6 +28,7 @@
 #include <CameraServer.h>
 #include <MotionProfileExample.h>
 #include <MotionProfile.h>
+#include <AnalogInput.h>
 
 #define TRIGGER_DEADZONE 0.1
 
@@ -39,11 +40,11 @@ class Robot : public frc::IterativeRobot
 	const int joystickNum2 = 1;
 	const int rMotorFrontNum = 5;
 	const int rMotorBackNum = 4;
-	const int lMotorFrontNum = 2;
-	const int lMotorBackNum = 3;
+	const int lMotorFrontNum = 3;
+	const int lMotorBackNum = 2;
 	const int lCubeIntakeNum = 1;
 	const int rCubeIntakeNum = 2;
-	const int cubeManipAngleNum = 10;
+	const int cubeManipAngleNum = 1;
 	const int lSolenoidNum = 1;
 	const int rSolenoidNum = 2;
 
@@ -73,11 +74,18 @@ class Robot : public frc::IterativeRobot
         std::string position = "LEFT";
         std::string gameData = "";
         std::string mode = "BASIC";
+        AnalogInput *intakeSense;
         bool allowFieldCrossing = false;
         bool autonHasRun = false;
         double matchStart;
         bool isDropping;
         double droppingStart = 0;
+
+        //vars for putting up manipulator by pressing button.
+        double upStart, upTime = 0.5;
+        bool upFlag = false;
+
+
 
     private:
         //Initialize variables
@@ -94,11 +102,12 @@ class Robot : public frc::IterativeRobot
         MotionProfileExample * rMotionProfile = new MotionProfileExample(*_rMotorFront);
         Compressor * compressor = new Compressor(0);
 
-        SFDrive *myRobot = new SFDrive (_lMotorFront, _rMotorFront);
+        SFDrive *myRobot = new SFDrive (_lMotorFront, _rMotorFront, _lCubeIntake, _rCubeIntake);
         Joystick *stick = new Joystick (joystickNum);
         Joystick *stick2 = new Joystick (joystickNum2);
         void RobotInit ()
         {
+        	intakeSense = new AnalogInput(4);
             //used to config the motor controllers for QuadEncoders(type of encoder)
             ctre::phoenix::motorcontrol::FeedbackDevice qE = QuadEncoder;
             _lMotorFront->ConfigSelectedFeedbackSensor (qE, 0, checkTimeout);
@@ -173,6 +182,10 @@ class Robot : public frc::IterativeRobot
                 	SmartDashboard::PutNumber("Shot Time", 0.7);
                 if(!SmartDashboard::ContainsKey("auto Timeout"))
 					SmartDashboard::PutNumber("auto Timeout", 4.0);
+                if(!SmartDashboard::ContainsKey("Right Auto Travel"))
+                	SmartDashboard::PutNumber("Right Auto Travel", 118);
+                if(!SmartDashboard::ContainsKey("Right Auto turn"))
+                	SmartDashboard::PutNumber("Right Auto turn", 18.0);
             }
 
         }
@@ -185,11 +198,63 @@ class Robot : public frc::IterativeRobot
             myRobot->ArcadeDrive (0.0, 0.0);
             currentAnglePos = _cubeManipAngle->GetSelectedSensorPosition(0);
             DriverStation::ReportError ("TeleopInit Completed");
+
+			//list testing block in shuffleboard.
+			SmartDashboard::PutNumber("Arc Radius", 46.514);
+			SmartDashboard::PutNumber("Arc Angle", 61.73);
+			SmartDashboard::PutNumber("maxVel", 55.0);
+			SmartDashboard::PutNumber("Shot Travel", 24.0);
+			SmartDashboard::PutNumber("Shot Start Distance", 6.0);
+			SmartDashboard::PutNumber("Shot Time", 0.7);
+			SmartDashboard::PutNumber("auto Timeout", 4.0);
+			SmartDashboard::PutNumber("maxAccl", 10000);
+			DriverStation::ReportError ("TestInit Completed");
         }
 
         void TeleopPeriodic ()
         {
             myRobot->ArcadeDrive (scale * stick->GetRawAxis (1), -(stick->GetRawAxis (4) > 0 ? 1 : -1) * stick->GetRawAxis (4) * stick->GetRawAxis (4));
+            SmartDashboard::PutNumber("Intake Sense", intakeSense->GetVoltage());
+
+    		myRobot->setAccel(SmartDashboard::GetNumber("maxAccl",8000));
+    		SmartDashboard::PutNumber("Left Encoder", _lMotorFront->GetSelectedSensorPosition(0));
+    		SmartDashboard::PutNumber("Right Encoder", _rMotorFront->GetSelectedSensorPosition(0));
+
+    		if (stick->GetRawButton(7))
+    		{
+    			float radius, angle, maxVel, shotTravel, shotDist, shotTime, timeout;
+    			radius =SmartDashboard::GetNumber("Arc Radius", 46.514);
+    			angle = SmartDashboard::GetNumber("Arc Angle", 61.73);
+    			maxVel = SmartDashboard::GetNumber("maxVel", 55);
+    			shotTravel = SmartDashboard::GetNumber("Shot Travel", 24.0);
+    			shotDist = SmartDashboard::GetNumber("Shot Start Distance", 6.0);
+    			shotTime = SmartDashboard::GetNumber("Shot Time", 0.7);
+    			timeout = SmartDashboard::GetNumber("auto Timeout", 4.0);
+
+    			int errCnt =0;
+    			errCnt += myRobot->PIDTurn(angle * -1.0f, radius, maxVel, timeout, true);
+    			errCnt += myRobot->PIDTurn(angle , radius, maxVel, timeout, true);
+    			errCnt += myRobot->PIDShoot(shotTravel,shotDist,shotTime, maxVel, timeout);
+
+    			if(errCnt)
+    				DriverStation::ReportError("PID Timeout" + errCnt);
+    		}
+    		if (stick->GetRawButton(8))
+    		    		{
+    		    			float  maxVel, timeout, rightTravel, rightShotDistance;
+    		    			maxVel = SmartDashboard::GetNumber("maxVel", 55);
+    		    			timeout = SmartDashboard::GetNumber("auto Timeout", 4.0);
+    		    			rightTravel = SmartDashboard::GetNumber("Right Auto Travel", 4*12 );
+    		    			rightShotDistance = SmartDashboard::GetNumber("Right Auto Turn", 12);
+
+    		    			int errCnt =0;
+    		    			errCnt += myRobot->PIDDrive(rightTravel, maxVel, timeout, true);
+    		    			errCnt += myRobot->PIDTurn(-85.0f, 0,maxVel, timeout, true);
+    		    			errCnt += myRobot->PIDShoot(rightShotDistance,4,1, maxVel, timeout);
+
+    		    			if(errCnt)
+    		    				DriverStation::ReportError("PID Timeout" + errCnt);
+    		    		}
 
             if(stick2->GetRawButton(7))
               {
@@ -239,17 +304,45 @@ class Robot : public frc::IterativeRobot
               }
 
             if(stick->GetRawButton(6)) // left bumper
+            {
+            	upFlag = false;
+            	_cubeManipAngle->ConfigPeakCurrentLimit (5, checkTimeout);
+            	_cubeManipAngle->Set(ctre::phoenix::motorcontrol::ControlMode::PercentOutput, -1);
+            }
+            else if(!upFlag)
+            {
+            	_cubeManipAngle->Set(ctre::phoenix::motorcontrol::ControlMode::PercentOutput,0);
+            }
+            if(stick->GetRawButton(5)) //right bumper
+            {
+            	upFlag = true;
+            	_cubeManipAngle->ConfigPeakCurrentLimit (15, checkTimeout);
+            	upStart =  Timer().GetFPGATimestamp() + upTime;
+            }
+            if(upFlag == true && upStart > Timer().GetFPGATimestamp())
+            {
+            	_cubeManipAngle->Set(ctre::phoenix::motorcontrol::ControlMode::PercentOutput, 0.8);
+            }
+            else
+            {
+            	upFlag = false;
+            }
+
+            /*
+            if(stick->GetRawButton(6))
               {
             		_cubeManipAngle->ConfigPeakCurrentLimit (5, checkTimeout);
             	    _cubeManipAngle->Set(ctre::phoenix::motorcontrol::ControlMode::PercentOutput, .8);
               }
             else if(stick->GetRawButton(5)) // right bumper
               {
+
             	_cubeManipAngle->ConfigPeakCurrentLimit (15, checkTimeout);
             	_cubeManipAngle->Set(ctre::phoenix::motorcontrol::ControlMode::PercentOutput, -1);
               }
             else if(!(stick->GetRawButton(5) || stick2->GetRawButton(6)))
             	_cubeManipAngle->Set(ctre::phoenix::motorcontrol::ControlMode::PercentOutput, 0.0);
+            	*/
 
 		}
 
@@ -272,13 +365,6 @@ class Robot : public frc::IterativeRobot
         	DriverStation::ReportError("Error setting position! Defaulting to LEFT");
         	position = "LEFT";
               }
-
-            if(mode != "NOTHING" && mode != "EMERGENCY")
-              {
-        	ConfigPIDS();
-                _lMotorFront->Set(ctre::phoenix::motorcontrol::ControlMode::MotionProfile, 1);
-                _rMotorFront->Set(ctre::phoenix::motorcontrol::ControlMode::MotionProfile, 1);
-              }
             else
               autonHasRun = true;
             matchStart = Timer().GetFPGATimestamp();
@@ -287,10 +373,32 @@ class Robot : public frc::IterativeRobot
 
         void AutonomousPeriodic ()
         {
-        	double autoStart = Timer().GetFPGATimestamp();
-        	do{
-        			gameData = frc::DriverStation::GetInstance ().GetGameSpecificMessage ().substr (0, 1);
-        	}while(gameData != "" && Timer().GetFPGATimestamp() < autoStart + gameDataTimeout);
+        	static int autoFlag = false;
+        	static double autoStart = Timer().GetFPGATimestamp();
+			do{
+					gameData = frc::DriverStation::GetInstance ().GetGameSpecificMessage ().substr (0, 1);
+			}while(gameData != "" && Timer().GetFPGATimestamp() < autoStart + gameDataTimeout);
+
+
+        	if(autoFlag == false )
+        	{
+    			float  maxVel, timeout, rightTravel, rightShotDistance;
+    			maxVel = SmartDashboard::GetNumber("maxVel", 55);
+    			timeout = SmartDashboard::GetNumber("auto Timeout", 4.0);
+    			rightTravel = SmartDashboard::GetNumber("Right Auto Travel",118 );
+    			rightShotDistance = SmartDashboard::GetNumber("Right Auto Turn", 18);
+
+				 myRobot->PIDDrive(rightTravel, maxVel, timeout, true);
+				 myRobot->PIDTurn(-85.0f, 0,maxVel, timeout, true);
+
+				 if(gameData == "R") //check for goal side
+				 {
+					 myRobot->PIDShoot(rightShotDistance,4,1, maxVel, timeout);
+				 }
+				 autoFlag = true;
+
+        	}
+        	/*
 
 
 		  _cubeManipAngle->Set(-0.4);
@@ -391,6 +499,7 @@ class Robot : public frc::IterativeRobot
 		  isDropping = false;
 		}
 	    }
+	    */
 	}
 
         void TestInit ()
