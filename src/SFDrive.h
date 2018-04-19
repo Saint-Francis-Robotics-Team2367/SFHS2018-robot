@@ -1,14 +1,14 @@
-#include <ctre/Phoenix.h>
-
 #ifndef SRC_SFDRIVE_H_
 #define SRC_SFDRIVE_H_
 
+#include <ctre/Phoenix.h>
+#include <Spark.h>
 class SFDrive
 {
    private:
       //MEMBER VARIABLES
-      WPI_TalonSRX * m_leftMotor;
-      WPI_TalonSRX * m_rightMotor;
+      WPI_TalonSRX * m_leftMotor, *m_rightMotor;
+      Spark *m_leftIntake, *m_rightIntake;
       double m_deadband = 0.08;
       double m_lastPIDTime = 0;
       int m_PIDStepTime = 10 ^ 8;
@@ -18,15 +18,14 @@ class SFDrive
       const float m_wheelTrack = 24;
       float m_currVelocity = 0;
       float m_maxAccl = 8000;
-      const float m_minDecelVel = 3000;
+      const float m_minDecelVel = 27 / m_wheelCircumference * m_ticksPerRev;
       const float m_P = 1;
       const float m_I = 0;
       const float m_D = 10;
       const float m_canTimeout = 0;
-      const float m_isInverted = -1; //set to positive number if robot is going in reverse during positive auto moves
 
    public:
-      SFDrive(WPI_TalonSRX * lMotor, WPI_TalonSRX * rMotor);
+      SFDrive(WPI_TalonSRX * lMotor, WPI_TalonSRX * rMotor, Spark *lIntake, Spark *rIntake);
       void ArcadeDrive(double xSpeed, double zRotation);
       bool PIDShoot(float moveInches, float shootStartDist, float shootTime, float maxVel, float timeout = 4);
       bool PIDDrive(float inches, float maxVel, float timeout = 4, bool ZeroVelocityAtEnd = true);

@@ -2,12 +2,17 @@
 #include <ctre/Phoenix.h>
 #include <Timer.h>
 #include <cmath>
-
+#include <SmartDashboard/SendableChooser.h>
+#include <SmartDashboard/SmartDashboard.h>
+#include <Spark.h>
 using namespace frc;
 
-SFDrive::SFDrive(WPI_TalonSRX * lMotor, WPI_TalonSRX * rMotor) :
-      m_leftMotor(lMotor), m_rightMotor(rMotor)
+SFDrive::SFDrive(WPI_TalonSRX *lMotor, WPI_TalonSRX *rMotor, Spark *lIntake, Spark *rIntake)
 {
+   m_leftMotor = lMotor;
+   m_rightMotor = rMotor;
+   m_leftIntake = lIntake;
+   m_rightIntake = rIntake;
 }
 
 void SFDrive::ArcadeDrive(double xSpeed, double zRotation)
@@ -99,8 +104,11 @@ bool SFDrive::PIDDrive(float inches, float maxVel, float timeout, bool ZeroVeloc
          if (setPoint > endPoint)
             setPoint = endPoint;
 
-         m_leftMotor->Set(ctre::phoenix::motorcontrol::ControlMode::Position, std::copysign(setPoint, inches) * m_isInverted);
-         m_rightMotor->Set(ctre::phoenix::motorcontrol::ControlMode::Position, std::copysign(setPoint, inches) * -1 * m_isInverted);
+         SmartDashboard::PutNumber("Left Encoder", endPoint - setPoint);
+         SmartDashboard::PutNumber("Right Encoder", endPoint - setPoint);
+
+         m_leftMotor->Set(ctre::phoenix::motorcontrol::ControlMode::Position, std::copysign(setPoint, inches) * -1);
+         m_rightMotor->Set(ctre::phoenix::motorcontrol::ControlMode::Position, std::copysign(setPoint, inches));
       }
    }
    else
@@ -120,8 +128,8 @@ bool SFDrive::PIDDrive(float inches, float maxVel, float timeout, bool ZeroVeloc
          if (setPoint > endPoint)
             setPoint = endPoint;
 
-         m_leftMotor->Set(ctre::phoenix::motorcontrol::ControlMode::Position, std::copysign(setPoint, inches) * m_isInverted);
-         m_rightMotor->Set(ctre::phoenix::motorcontrol::ControlMode::Position, std::copysign(setPoint, inches) * -1 * m_isInverted);
+         m_leftMotor->Set(ctre::phoenix::motorcontrol::ControlMode::Position, std::copysign(setPoint, inches) * -1);
+         m_rightMotor->Set(ctre::phoenix::motorcontrol::ControlMode::Position, std::copysign(setPoint, inches));
       }
    }
 
@@ -186,18 +194,15 @@ bool SFDrive::PIDTurn(float degreesClockwise, float radius, float maxVel, float 
             setPoint = endPoint;
          int innerSet = ((float) setPoint / (float) endPoint) * innerChordLen;
 
-         setPoint = std::copysign(setPoint, degreesClockwise);
-         innerSet = std::copysign(innerSet, degreesClockwise);
-
          if (degreesClockwise > 0)
          {
-            m_leftMotor->Set(ctre::phoenix::motorcontrol::ControlMode::Position, setPoint * m_isInverted);
-            m_rightMotor->Set(ctre::phoenix::motorcontrol::ControlMode::Position, innerSet * -1 * m_isInverted);
+            m_leftMotor->Set(ctre::phoenix::motorcontrol::ControlMode::Position, setPoint * -1);
+            m_rightMotor->Set(ctre::phoenix::motorcontrol::ControlMode::Position, innerSet);
          }
          else
          {
-            m_leftMotor->Set(ctre::phoenix::motorcontrol::ControlMode::Position, innerSet * m_isInverted);
-            m_rightMotor->Set(ctre::phoenix::motorcontrol::ControlMode::Position, setPoint * -1 * m_isInverted);
+            m_leftMotor->Set(ctre::phoenix::motorcontrol::ControlMode::Position, innerSet * -1);
+            m_rightMotor->Set(ctre::phoenix::motorcontrol::ControlMode::Position, setPoint);
          }
       }
    }
@@ -221,13 +226,13 @@ bool SFDrive::PIDTurn(float degreesClockwise, float radius, float maxVel, float 
 
          if (degreesClockwise > 0)
          {
-            m_leftMotor->Set(ctre::phoenix::motorcontrol::ControlMode::Position, setPoint * m_isInverted);
-            m_rightMotor->Set(ctre::phoenix::motorcontrol::ControlMode::Position, innerSet * -1 * m_isInverted);
+            m_leftMotor->Set(ctre::phoenix::motorcontrol::ControlMode::Position, setPoint * -1);
+            m_rightMotor->Set(ctre::phoenix::motorcontrol::ControlMode::Position, innerSet);
          }
          else
          {
-            m_leftMotor->Set(ctre::phoenix::motorcontrol::ControlMode::Position, innerSet * m_isInverted);
-            m_rightMotor->Set(ctre::phoenix::motorcontrol::ControlMode::Position, setPoint * -1 * m_isInverted);
+            m_leftMotor->Set(ctre::phoenix::motorcontrol::ControlMode::Position, innerSet * -1);
+            m_rightMotor->Set(ctre::phoenix::motorcontrol::ControlMode::Position, setPoint);
          }
       }
    }
@@ -261,7 +266,7 @@ bool SFDrive::PIDShoot(float moveInches, float shootStartDist, float shootTime, 
    enableP();
 
    startTime = lastStepTime = Timer().GetFPGATimestamp();
-   while ((int) setPoint < (int) endPoint && startTime + timeout > lastStepTime)
+   while (setPoint != endPoint && startTime + timeout > lastStepTime)
    {
       //handle timing
       currStepTime = Timer().GetFPGATimestamp();
@@ -277,19 +282,23 @@ bool SFDrive::PIDShoot(float moveInches, float shootStartDist, float shootTime, 
 
       if (setPoint >= shootPoint && shootStartTime == 0)
       {
-         //shoot
+         m_leftIntake->Set(1.0);
+         m_rightIntake->Set(1.0);
          shootStartTime = Timer().GetFPGATimestamp();
       }
       if (Timer().GetFPGATimestamp() > shootStartTime + shootTime)
       {
-         //stop Shot
+
+         m_leftIntake->Set(0);
+         m_rightIntake->Set(0);
       }
 
-      m_leftMotor->Set(ctre::phoenix::motorcontrol::ControlMode::Position, std::copysign(setPoint, moveInches) * m_isInverted);
-      m_rightMotor->Set(ctre::phoenix::motorcontrol::ControlMode::Position, std::copysign(setPoint, moveInches) * -1 * m_isInverted);
+      m_leftMotor->Set(ctre::phoenix::motorcontrol::ControlMode::Position, std::copysign(setPoint, moveInches) * -1);
+      m_rightMotor->Set(ctre::phoenix::motorcontrol::ControlMode::Position, std::copysign(setPoint, moveInches));
    }
 
-   //stop Shot here as well in case the timeout cuts off the loop.
+   m_leftIntake->Set(0);
+   m_rightIntake->Set(0);
 
    if (lastStepTime > startTime + timeout && lastStepTime > shootStartTime + shootTime) //simple error check, did we finish the motion before we ran out of time
    {
@@ -327,3 +336,4 @@ void SFDrive::setAccel(float accl)
 {
    m_maxAccl = accl;
 }
+
