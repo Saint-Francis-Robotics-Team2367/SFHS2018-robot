@@ -23,6 +23,7 @@ class SFDrive
       const float m_I = 0;
       const float m_D = 10;
       const float m_canTimeout = 0;
+      bool isArmDown = false;
 
    public:
       SFDrive(WPI_TalonSRX * lMotor, WPI_TalonSRX * rMotor, Spark *lIntake, Spark *rIntake, WPI_TalonSRX * cubeManipAngle);

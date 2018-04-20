@@ -266,6 +266,19 @@ bool SFDrive::PIDShoot(float moveInches, float shootStartDist, float shootTime, 
    m_rightMotor->Set(ctre::phoenix::motorcontrol::ControlMode::Position, 0);
    enableP();
 
+   //Arm down
+   if (isArmDown)
+   {
+      double timeStart = Timer().GetFPGATimestamp();
+      m_cubeManipAngle->ConfigPeakCurrentLimit(5, 0);
+      while (Timer().GetFPGATimestamp() - timeStart < 0.5)
+      {
+         m_cubeManipAngle->Set(ctre::phoenix::motorcontrol::ControlMode::PercentOutput, 0.8);
+      }
+      m_cubeManipAngle->Set(ctre::phoenix::motorcontrol::ControlMode::PercentOutput, 0);
+   }
+   isArmDown = false;
+
    startTime = lastStepTime = Timer().GetFPGATimestamp();
    while (setPoint != endPoint && startTime + timeout > lastStepTime)
    {
@@ -316,18 +329,31 @@ bool SFDrive::PIDPickup(float moveInches, float shootStartDist, float shootTime,
    int setPoint = 0;
    double startTime, currStepTime, lastStepTime, deltaTime, shootStartTime = 0;
 
-   //convert from inches to encoder ticks
+//convert from inches to encoder ticks
    float endPoint = abs(moveInches) / m_wheelCircumference * m_ticksPerRev;
    float shootPoint = abs(shootStartDist) / m_wheelCircumference * m_ticksPerRev;
    int maxVelDelta = maxVel / m_wheelCircumference * m_ticksPerRev;
 
-   //zero encoder
+//zero encoder
    disableP();
    m_leftMotor->SetSelectedSensorPosition(0, 0, m_canTimeout);
    m_rightMotor->SetSelectedSensorPosition(0, 0, m_canTimeout);
    m_leftMotor->Set(ctre::phoenix::motorcontrol::ControlMode::Position, 0);
    m_rightMotor->Set(ctre::phoenix::motorcontrol::ControlMode::Position, 0);
    enableP();
+
+//Arm down
+   if (!isArmDown)
+   {
+      double timeStart = Timer().GetFPGATimestamp();
+      m_cubeManipAngle->ConfigPeakCurrentLimit(5, 0);
+      while (Timer().GetFPGATimestamp() - timeStart < 0.5)
+      {
+         m_cubeManipAngle->Set(ctre::phoenix::motorcontrol::ControlMode::PercentOutput, -1);
+      }
+      m_cubeManipAngle->Set(ctre::phoenix::motorcontrol::ControlMode::PercentOutput, 0);
+   }
+   isArmDown = true;
 
    startTime = lastStepTime = Timer().GetFPGATimestamp();
    while (setPoint != endPoint && startTime + timeout > lastStepTime)
