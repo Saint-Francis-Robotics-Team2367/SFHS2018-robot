@@ -132,6 +132,7 @@ class Robot : public frc::IterativeRobot
          position = "RIGHT";
          SmartDashboard::PutBoolean("Allow Field Crossing?", false);
          SmartDashboard::PutString("Starting Position (LEFT, RIGHT, CENTER)", position);
+         SmartDashboard::PutNumber("Rumble Multiplier", rumbleMultiplier);
 
          //list testing block in shuffleboard.
          SmartDashboard::PutNumber("Arc Radius", 46.514);
@@ -202,41 +203,6 @@ class Robot : public frc::IterativeRobot
          SmartDashboard::PutNumber("Left Encoder", _lMotorFront->GetSelectedSensorPosition(0));
          SmartDashboard::PutNumber("Right Encoder", _rMotorFront->GetSelectedSensorPosition(0));
 
-         if (stick->GetRawButton(7))
-         {
-            float radius, angle, maxVel, shotTravel, shotDist, shotTime, timeout;
-            radius = SmartDashboard::GetNumber("Arc Radius", 46.514);
-            maxVel = SmartDashboard::GetNumber("maxVel", 55);
-            shotTravel = SmartDashboard::GetNumber("Shot Travel", 24.0);
-            shotDist = SmartDashboard::GetNumber("Shot Start Distance", 6.0);
-            shotTime = SmartDashboard::GetNumber("Shot Time", 0.7);
-            timeout = SmartDashboard::GetNumber("auto Timeout", 4.0);
-
-            int errCnt = 0;
-            errCnt += myRobot->PIDTurn(angle * -1.0f, radius, maxVel, timeout, true);
-            errCnt += myRobot->PIDTurn(angle, radius, maxVel, timeout, true);
-            errCnt += myRobot->PIDShoot(shotTravel, shotDist, shotTime, maxVel, timeout);
-
-            if (errCnt)
-               DriverStation::ReportError("PID Timeout" + errCnt);
-         }
-         if (stick->GetRawButton(8))
-         {
-            float maxVel, timeout, rightTravel, rightShotDistance;
-            maxVel = SmartDashboard::GetNumber("maxVel", 55);
-            timeout = SmartDashboard::GetNumber("auto Timeout", 4.0);
-            rightTravel = SmartDashboard::GetNumber("Right Auto Travel", 4 * 12);
-            rightShotDistance = SmartDashboard::GetNumber("Right Auto Turn", 12);
-
-            int errCnt = 0;
-            errCnt += myRobot->PIDDrive(rightTravel, maxVel, timeout, true);
-            errCnt += myRobot->PIDTurn(-85.0f, 0, maxVel, timeout, true);
-            errCnt += myRobot->PIDShoot(rightShotDistance, 4, 1, maxVel, timeout);
-
-            if (errCnt)
-               DriverStation::ReportError("PID Timeout" + errCnt);
-         }
-
          if (stick->GetRawButton(2)) //b
          {
             this->_lCubeIntake->Set(1);
@@ -299,9 +265,15 @@ class Robot : public frc::IterativeRobot
             upFlag = false;
          }
 
-         double acceleration = std::pow(accelerometer.GetX() * accelerometer.GetX() + accelerometer.GetZ() * accelerometer.GetZ(), 0.5);
+         double acceleration = std::pow(accelerometer.GetX() * accelerometer.GetX() + accelerometer.GetY() * accelerometer.GetY(), 0.5);
+         rumbleMultiplier = SmartDashboard::GetNumber("Rumble Multiplier", rumbleMultiplier);
+         if(acceleration < 0.7)
+            acceleration=0;
+
          stick->SetRumble(GenericHID::RumbleType::kLeftRumble, acceleration * rumbleMultiplier);
          stick->SetRumble(GenericHID::RumbleType::kRightRumble, acceleration * rumbleMultiplier);
+
+
 
          /*
           if(stick->GetRawButton(6))
@@ -342,11 +314,11 @@ class Robot : public frc::IterativeRobot
          timeout = SmartDashboard::GetNumber("auto Timeout", 4.0);
 
          double autoStart = Timer().GetFPGATimestamp();
-         do
+         while (gameData == "" && Timer().GetFPGATimestamp() < autoStart + gameDataTimeout)
          {
             gameData = frc::DriverStation::GetInstance().GetGameSpecificMessage().substr(0, 1);
          }
-         while (gameData == "" && Timer().GetFPGATimestamp() < autoStart + gameDataTimeout);
+
 
          if (gameData == "")
          {
