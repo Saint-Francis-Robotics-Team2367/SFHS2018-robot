@@ -49,7 +49,6 @@ class Robot : public frc::IterativeRobot
       //Motor tuning constants
       double scale = 1;
       const double TICKS_PER_INCH = 217.3;
-      const double TICKS_PER_DEGREE = -3.65;
       double pConstantDrive = 1;
       double iConstantDrive = 0;
       double dConstantDrive = 10;
@@ -62,11 +61,8 @@ class Robot : public frc::IterativeRobot
       //Misc
       int checkTimeout = 0;
       int timeOut = 100;
-      double currentAnglePos;
-      double angleIncrement = 2 * TICKS_PER_DEGREE;
       double lastPacket = 0;
       double lastTestPacket = 0;
-      double switchPoint = 45 * TICKS_PER_DEGREE;
       double rumbleMultiplier = 1.0/8.0;
       const float gameDataTimeout = 0.1; //amount of time to wait in seconds for game data before defaulting to move forward
       //Starting Data
@@ -86,7 +82,7 @@ class Robot : public frc::IterativeRobot
       Spark * _rCubeIntake = new Spark(rCubeIntakeNum);
       WPI_TalonSRX * _cubeManipAngle = new WPI_TalonSRX(cubeManipAngleNum);
 
-      SFDrive *myRobot = new SFDrive(_lMotorFront, _rMotorFront, _lCubeIntake, _rCubeIntake);
+      SFDrive *myRobot = new SFDrive(_lMotorFront, _rMotorFront, _lCubeIntake, _rCubeIntake, _cubeManipAngle);
       Joystick *stick = new Joystick(joystickNum);
       Joystick *stick2 = new Joystick(joystickNum2);
 
@@ -180,7 +176,6 @@ class Robot : public frc::IterativeRobot
          //Set encoder positions to 0
          ConfigPIDS();
          myRobot->ArcadeDrive(0.0, 0.0);
-         currentAnglePos = _cubeManipAngle->GetSelectedSensorPosition(0);
          DriverStation::ReportError("TeleopInit Completed");
 
          //list testing block in shuffleboard.
@@ -226,18 +221,6 @@ class Robot : public frc::IterativeRobot
             {
                this->_rCubeIntake->Set(0);
             }
-         }
-         if (stick2->GetRawButtonReleased(1)) // a button
-         {
-            currentAnglePos = TICKS_PER_DEGREE * 90;
-         }
-         else if (stick2->GetRawButtonReleased(4)) // y button
-         {
-            currentAnglePos = TICKS_PER_DEGREE * 0;
-         }
-         else if (stick2->GetRawButtonReleased(3)) // x button
-         {
-            currentAnglePos = switchPoint;
          }
 
          if (stick->GetRawButton(6)) // left bumper
@@ -384,7 +367,6 @@ class Robot : public frc::IterativeRobot
          //Set encoder positions to 0
          ConfigPIDS();
          myRobot->ArcadeDrive(0.0, 0.0);
-         currentAnglePos = _cubeManipAngle->GetSelectedSensorPosition(0);
          DriverStation::ReportError("TestInit Completed");
       }
 
@@ -431,18 +413,6 @@ class Robot : public frc::IterativeRobot
                DriverStation::ReportError("PID Timeout" + errCnt);
          }
 
-         if (stick->GetRawButtonReleased(1)) // a button
-         {
-            currentAnglePos = TICKS_PER_DEGREE * 90;
-         }
-         else if (stick->GetRawButtonReleased(4)) // y button
-         {
-            currentAnglePos = TICKS_PER_DEGREE * 0;
-         }
-         else if (stick->GetRawButtonReleased(3)) // x button
-         {
-            currentAnglePos = switchPoint;
-         }
          else if (stick->GetRawButton(6)) // left bumper
          {
             _cubeManipAngle->Set(1);

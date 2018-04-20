@@ -7,7 +7,7 @@ class SFDrive
 {
    private:
       //MEMBER VARIABLES
-      WPI_TalonSRX * m_leftMotor, *m_rightMotor;
+      WPI_TalonSRX * m_leftMotor, *m_rightMotor, *m_cubeManipAngle;
       Spark *m_leftIntake, *m_rightIntake;
       double m_deadband = 0.08;
       double m_lastPIDTime = 0;
@@ -25,9 +25,10 @@ class SFDrive
       const float m_canTimeout = 0;
 
    public:
-      SFDrive(WPI_TalonSRX * lMotor, WPI_TalonSRX * rMotor, Spark *lIntake, Spark *rIntake);
+      SFDrive(WPI_TalonSRX * lMotor, WPI_TalonSRX * rMotor, Spark *lIntake, Spark *rIntake, WPI_TalonSRX * cubeManipAngle);
       void ArcadeDrive(double xSpeed, double zRotation);
       bool PIDShoot(float moveInches, float shootStartDist, float shootTime, float maxVel, float timeout = 4);
+      bool PIDPickup(float moveInches, float shootStartDist, float shootTime, float maxVel, float timeout = 4);
       bool PIDDrive(float inches, float maxVel, float timeout = 4, bool ZeroVelocityAtEnd = true);
       bool PIDTurn(float degreesClockwise, float radius, float maxVel, float timeout = 4, bool ZeroVelocityAtEnd = true);
       void initPID();
