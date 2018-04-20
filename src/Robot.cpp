@@ -28,6 +28,7 @@
 #include <CameraServer.h>
 #include <Solenoid.h>
 #include <Compressor.h>
+#include <BuiltInAccelerometer.h>
 
 #define TRIGGER_DEADZONE 0.1
 
@@ -65,15 +66,12 @@ class Robot : public frc::IterativeRobot
       double angleIncrement = 2 * TICKS_PER_DEGREE;
       double lastPacket = 0;
       double lastTestPacket = 0;
-      double switchPoint = 45 * TICKS_PER_DEGREE; //TODO
+      double switchPoint = 45 * TICKS_PER_DEGREE;
+      double rumbleMultiplier = 1.0/8.0;
       const float gameDataTimeout = 0.1; //amount of time to wait in seconds for game data before defaulting to move forward
       //Starting Data
-      std::string position = "LEFT";
+      std::string position = "RIGHT";
       std::string gameData = "";
-      std::string mode = "BASIC";
-      bool allowFieldCrossing = false;
-      double matchStart;
-      bool isDropping;
       double droppingStart = 0;
       bool upFlag = false;
       double upStart, upTime = 0.5;
@@ -91,6 +89,8 @@ class Robot : public frc::IterativeRobot
       SFDrive *myRobot = new SFDrive(_lMotorFront, _rMotorFront, _lCubeIntake, _rCubeIntake);
       Joystick *stick = new Joystick(joystickNum);
       Joystick *stick2 = new Joystick(joystickNum2);
+
+      BuiltInAccelerometer accelerometer;
 
       void RobotInit()
       {
@@ -130,7 +130,6 @@ class Robot : public frc::IterativeRobot
          CameraServer::GetInstance()->StartAutomaticCapture();
          gameData = "";
          position = "RIGHT";
-         SmartDashboard::PutString("Mode (NOTHING, BASIC, INTERMEDIATE, ADVANCED, EMERGENCY)", mode);
          SmartDashboard::PutBoolean("Allow Field Crossing?", false);
          SmartDashboard::PutString("Starting Position (LEFT, RIGHT, CENTER)", position);
 
@@ -141,14 +140,15 @@ class Robot : public frc::IterativeRobot
          SmartDashboard::PutNumber("Shot Travel", 24.0);
          SmartDashboard::PutNumber("auto Timeout", 4.0);
          SmartDashboard::PutNumber("maxAccl", 10000);
+
+         //config acceleraometer
+         accelerometer.SetRange(frc::Accelerometer::kRange_8G);
       }
 
       void RobotPeriodic()
       {
          if (lastPacket + .5 < Timer().GetFPGATimestamp())
          {
-            if (!SmartDashboard::ContainsKey("Mode (NOTHING, BASIC, INTERMEDIATE, ADVANCED, EMERGENCY)"))
-               SmartDashboard::PutString("Mode (NOTHING, BASIC, INTERMEDIATE, ADVANCED, EMERGENCY)", mode);
             if (!SmartDashboard::ContainsKey("Allow Field Crossing?"))
                SmartDashboard::PutBoolean("Allow Field Crossing?", false);
             if (!SmartDashboard::ContainsKey("Starting Position (LEFT, RIGHT, CENTER)"))
@@ -206,7 +206,6 @@ class Robot : public frc::IterativeRobot
          {
             float radius, angle, maxVel, shotTravel, shotDist, shotTime, timeout;
             radius = SmartDashboard::GetNumber("Arc Radius", 46.514);
-            angle = SmartDashboard::GetNumber("Arc Angle", 61.73);
             maxVel = SmartDashboard::GetNumber("maxVel", 55);
             shotTravel = SmartDashboard::GetNumber("Shot Travel", 24.0);
             shotDist = SmartDashboard::GetNumber("Shot Start Distance", 6.0);
@@ -300,6 +299,10 @@ class Robot : public frc::IterativeRobot
             upFlag = false;
          }
 
+         double acceleration = std::pow(accelerometer.GetX() * accelerometer.GetX() + accelerometer.GetZ() * accelerometer.GetZ(), 0.5);
+         stick->SetRumble(GenericHID::RumbleType::kLeftRumble, acceleration * rumbleMultiplier);
+         stick->SetRumble(GenericHID::RumbleType::kRightRumble, acceleration * rumbleMultiplier);
+
          /*
           if(stick->GetRawButton(6))
           {
@@ -331,11 +334,9 @@ class Robot : public frc::IterativeRobot
           */
 
          position = SmartDashboard::GetString("Starting Position (LEFT, RIGHT, CENTER)", "RIGHT");
-         allowFieldCrossing = SmartDashboard::GetBoolean("Allow Field Crossing?", false);
 
-         float radius, angle, maxVel, shotTravel, timeout;
+         float radius, maxVel, shotTravel, timeout;
          radius = SmartDashboard::GetNumber("Arc Radius", 46.514);
-         angle = SmartDashboard::GetNumber("Arc Angle", 61.73);
          maxVel = SmartDashboard::GetNumber("maxVel", 55);
          shotTravel = SmartDashboard::GetNumber("Shot Travel", 24.0);
          timeout = SmartDashboard::GetNumber("auto Timeout", 4.0);
@@ -345,18 +346,13 @@ class Robot : public frc::IterativeRobot
          {
             gameData = frc::DriverStation::GetInstance().GetGameSpecificMessage().substr(0, 1);
          }
-         while (gameData != "" && Timer().GetFPGATimestamp() < autoStart + gameDataTimeout);
+         while (gameData == "" && Timer().GetFPGATimestamp() < autoStart + gameDataTimeout);
+
          if (gameData == "")
          {
             DriverStation::ReportError("No game data, defaulting to forward.");
             myRobot->PIDDrive(60, maxVel, timeout, true);
             return;
-         }
-
-         if (mode != "NOTHING" && mode != "BASIC" && mode != "INTERMEDIATE" && mode != "ADVANCED" && mode != "EMERGENCY")
-         {
-            DriverStation::ReportError("Error setting auton mode! Defaulting to BASIC");
-            mode = "BASIC";
          }
 
          if (position != "LEFT" && position != "CENTER" && position != "RIGHT")
@@ -365,13 +361,7 @@ class Robot : public frc::IterativeRobot
             position = "LEFT";
          }
 
-         if (mode != "NOTHING" && mode != "EMERGENCY")
-         {
-            ConfigPIDS();
-         }
-         matchStart = Timer().GetFPGATimestamp();
-
-         DriverStation::ReportError("AUTON START. Mode: " + mode + " Starting Position: " + position + " Cross field? " + (allowFieldCrossing ? "True" : "False") + " Switch side: " + gameData);
+         DriverStation::ReportError("AUTON START. Starting Position: " + position + " Switch side: " + gameData);
 
          int errorCode = 0;
 
@@ -435,13 +425,11 @@ class Robot : public frc::IterativeRobot
 
          if (stick->GetRawButton(7))
          {
-            float radius, angle, maxVel, shotTravel, shotDist, shotTime, timeout;
+            float radius, angle, maxVel, shotTravel, timeout;
             radius = SmartDashboard::GetNumber("Arc Radius", 46.514);
             angle = SmartDashboard::GetNumber("Arc Angle", 61.73);
             maxVel = SmartDashboard::GetNumber("maxVel", 55);
             shotTravel = SmartDashboard::GetNumber("Shot Travel", 24.0);
-            shotDist = SmartDashboard::GetNumber("Shot Start Distance", 6.0);
-            shotTime = SmartDashboard::GetNumber("Shot Time", 0.7);
             timeout = SmartDashboard::GetNumber("auto Timeout", 4.0);
 
             int errCnt = 0;
