@@ -68,6 +68,7 @@ class Robot : public frc::IterativeRobot
       double lastTestPacket = 0;
       double switchPoint = 45 * TICKS_PER_DEGREE;
       double rumbleMultiplier = 1.0/8.0;
+      double rumbleDeadzone = 0.5;
       const float gameDataTimeout = 0.1; //amount of time to wait in seconds for game data before defaulting to move forward
       //Starting Data
       std::string position = "RIGHT";
@@ -121,10 +122,26 @@ class Robot : public frc::IterativeRobot
          _cubeManipAngle->SelectProfileSlot(0, 0);
 
          //Set drive motor max voltage to 30 amps
+
+         _lMotorFront->ConfigContinuousCurrentLimit(maxDriveMotorCurrent - 5, checkTimeout);
+         _rMotorFront->ConfigContinuousCurrentLimit(maxDriveMotorCurrent - 5, checkTimeout);
+         _lMotorBack->ConfigContinuousCurrentLimit(maxDriveMotorCurrent - 5, checkTimeout);
+         _rMotorBack->ConfigContinuousCurrentLimit(maxDriveMotorCurrent - 5, checkTimeout);
+
          _lMotorFront->ConfigPeakCurrentLimit(maxDriveMotorCurrent, checkTimeout);
          _rMotorFront->ConfigPeakCurrentLimit(maxDriveMotorCurrent, checkTimeout);
          _lMotorBack->ConfigPeakCurrentLimit(maxDriveMotorCurrent, checkTimeout);
          _rMotorBack->ConfigPeakCurrentLimit(maxDriveMotorCurrent, checkTimeout);
+
+         _lMotorFront->ConfigPeakCurrentDuration(0, checkTimeout);
+         _rMotorFront->ConfigPeakCurrentDuration(0, checkTimeout);
+         _lMotorBack->ConfigPeakCurrentDuration(0, checkTimeout);
+         _rMotorBack->ConfigPeakCurrentDuration(0, checkTimeout);
+
+         _lMotorFront->EnableCurrentLimit(true);
+         _rMotorFront->EnableCurrentLimit(true);
+         _lMotorBack->EnableCurrentLimit(true);
+         _rMotorBack->EnableCurrentLimit(true);
 
          //Shuffleboard
          CameraServer::GetInstance()->StartAutomaticCapture();
@@ -133,6 +150,7 @@ class Robot : public frc::IterativeRobot
          SmartDashboard::PutBoolean("Allow Field Crossing?", false);
          SmartDashboard::PutString("Starting Position (LEFT, RIGHT, CENTER)", position);
          SmartDashboard::PutNumber("Rumble Multiplier", rumbleMultiplier);
+         SmartDashboard::PutNumber("Rumble Deadzone", rumbleDeadzone);
 
          //list testing block in shuffleboard.
          SmartDashboard::PutNumber("Arc Radius", 46.514);
@@ -267,7 +285,8 @@ class Robot : public frc::IterativeRobot
 
          double acceleration = std::pow(accelerometer.GetX() * accelerometer.GetX() + accelerometer.GetY() * accelerometer.GetY(), 0.5);
          rumbleMultiplier = SmartDashboard::GetNumber("Rumble Multiplier", rumbleMultiplier);
-         if(acceleration < 0.7)
+         rumbleDeadzone = SmartDashboard::GetNumber("Rumble Deadzone", rumbleDeadzone);
+         if(acceleration < rumbleDeadzone)
             acceleration=0;
 
          stick->SetRumble(GenericHID::RumbleType::kLeftRumble, acceleration * rumbleMultiplier);
@@ -500,7 +519,8 @@ class Robot : public frc::IterativeRobot
 
       void DisabledInit()
       {
-
+         stick->SetRumble(GenericHID::RumbleType::kLeftRumble, 0);
+         stick->SetRumble(GenericHID::RumbleType::kRightRumble, 0);
       }
 
       void DisabledPeriodic()
